@@ -1,10 +1,10 @@
 ﻿* Encoding: UTF-8.
 *THIS SCRIPT IDENTIFIES KINSHIP PRIOR TO 1960.
-*VARIABLES REQUIRED FOR THIS OPERATION ARE FROM FOB60 AND DEMO:
+*VARIABLES REQUIRED FOR THIS OPERATION ARE FROM FOB60(1960 Census) AND DEMO(Demographic database):
 *THEY NEED TO BE IN THE FOLLOWING NAMES AND FORMATS:
 *FOB60: husnr_60, bohushnr_60, famkjnr60 (STRING).
-*FOB60: famtype_60 (NUMERIC).
-*DEMO: fodt_aar (numeric), kjonn (1=men, 2=women, numeric), 
+*FOB60: famtype_60 (family type in 1960, NUMERIC).
+*DEMO: fodt_aar (birth year, numeric), kjonn (sex, 1=men, 2=women, numeric), 
 *RUNNING NUMBER (string): USED ONCE - CHANGE THE NAME SO IT FITS WITH CURRENT PROJECT.
 
 

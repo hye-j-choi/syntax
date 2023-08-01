@@ -1,0 +1,325 @@
+﻿* Encoding: UTF-8.
+*THIS SCRIPT IDENTIFIES KINSHIP PRIOR TO 1960.
+*VARIABLES REQUIRED FOR THIS OPERATION ARE FROM FOB60 AND DEMO:
+*THEY NEED TO BE IN THE FOLLOWING NAMES AND FORMATS:
+*FOB60: husnr_60, bohushnr_60, famkjnr60 (STRING).
+*FOB60: famtype_60 (NUMERIC).
+*DEMO: fodt_aar (numeric), kjonn (1=men, 2=women, numeric), 
+*RUNNING NUMBER (string): USED ONCE - CHANGE THE NAME SO IT FITS WITH CURRENT PROJECT.
+
+
+
+* HAS TO BE RUNNED FOR THE SYNTAX TO WORK.
+dataset name hoved.
+execute.
+
+*COPY RUNNING NUMBER.
+*string lopenr_16_copy (A16).
+*compute lopenr_16_copy = lopenr_16.
+*execute.
+
+*COPY RUNNING NUMBER.
+string fodt_aar (A4).
+compute fodt_aar = faar.
+execute.
+
+
+
+*CREATES EMPTY VARIABLES.
+string famnr6 (A16).
+numeric husnr_60NY (f3.0).
+numeric bohushnr_60NY (f3.0).
+numeric famkjnr_60NY (f3.0).
+execute.
+
+
+*VARIABLE TRIMMING INTO THE EMPTY VARIABLES
+*IT'S IMPERATIVE THAT THE SOURCE VARIABLES ARE IN STRING FORMAT.
+compute husnr_60NY=length(ltrim(rtrim(husnr_60))).
+compute bohushnr_60NY = length(ltrim(rtrim(bohushnr_60))).
+compute famkjnr_60NY = length(ltrim(rtrim(famkjnr_60))).
+execute.
+
+*INTERMEDIATE VARIABLES.
+string husnr_60short (a8).
+string bohushnr_60short (a3).
+string famkjnr_60short (a3).
+execute.
+
+*TRIMMING.
+compute husnr_60short=(ltrim(rtrim(husnr_60))).
+compute bohushnr_60short =(ltrim(rtrim(bohushnr_60))).
+compute famkjnr_60short=(ltrim(rtrim(famkjnr_60))).
+
+*IF ALL VARIABLES ARE LESS THAN 0, COMBINE THE VALUES TO CREATE A FAMILY NUMBER.
+do if ((husnr_60NY>0) and (bohushnr_60NY>0) and (famkjnr_60NY>0)).
+compute famnr6 =concat (rtrim(husnr_60short), rtrim(bohushnr_60short), RTRIM(famkjnr_60short)).  
+end if.
+execute.
+
+*A VARIABLE THAT IS EQUAL TO 1 IF THERE IS A VALID FAMILY NUMBER.
+do if famnr6<>" ".
+compute gyldigfamnr6=1.
+end if.
+execute.
+
+
+*SORT ON FAMILY NUMBER.
+sort cases by famnr6 (A).
+execute.
+
+
+*CALCULATE AGE OF INDIVDIUALS IN FOB60 FOR THE PURPOSE OF IDENTIFYING OLDEST WOMEN OR MAN IN HOUSEHOLD.
+do if fodt_aar<1961.
+compute age60=1960-fodt_aar.
+end if.
+execute.
+
+*CREATE NEW AGE-SPECIFIC VARAIBLES FOR AGE AT FOB60..
+if kjonn=1 agemen60=age60. 
+if kjonn=2 agewo60=age60.  
+execute.
+
+
+*IDENTIFY OLDEST PERSON WITHIN THE FAMILY.
+*EACH TEMP SYNTAX SHOULD BE RUN SIMULTAENOUS TO ENSURE IT RUNS SMOOTHLY.
+*THIS IS BECAUSE NEW DATA SETS ARE GENERATED, AND MALCLIKING CAN CHANGE THE ACTIVE DATA SET.
+TEMPORARY. 
+select if gyldigfamnr6=1.
+aggregate outfile=*
+/presorted
+/break=famnr6
+/oldwo60=MAX(agewo60)
+/oldman60=MAX(agemen60)
+/persfam60=nu.
+dataset name aggregert. 
+execute.
+
+*SORT BOTH DATA SETS. 
+DATASET ACTIVATE hoved.
+MATCH FILES /FILE=*
+  /TABLE='aggregert'
+  /BY famnr6.
+EXECUTE.
+
+DATASET CLOSE aggregert.
+execute.
+
+*FIRST FOR FATHERS.
+
+*CREATE EMPTY VARIABLE.
+string farlopenr (a9).
+execute.
+
+*IDENTIFY PARTENS WHO ARE THE OLDEST WOMEN OR MAN IN A SPECIFIC HOUSEHOLD AND AT LEAST 15 YEARS IN 1960. 
+do if ((kjonn=1) & (famtype_60=3 | famtype_60=5) & (age60=oldman60) & (gyldigfamnr6=1) & (age60>15)).
+  compute fodtaarfar =fodt_aar.
+  compute forelder=1.
+  compute farlopenr=lopenr_16.
+end if.
+execute.
+
+*REPATED FOR MOTHERS.
+string morlopenr (a9).
+execute.
+
+do if ((kjonn=2) & (famtype_60=3 | famtype_60=4) & (age60=oldwo60) & (gyldigfamnr6=1) & (age60>15)).
+  compute fodtaarmor =fodt_aar.
+  compute forelder=2.
+ compute morlopenr=lopenr_16.
+end if.
+execute.
+
+*COMMENT  1=father, 2=mother.
+*COMMENT - OTHER VARIABLES MAY BE ADDED IN THE ABOVE SCRIPT, SUCH AS THE DEATH YEAR OF THE FATHER.
+********************************************************************************.
+*FOR EACH MEMBER OF THE FAMILY - IDENTIFY THE POTENTIAL MOTHER AND THE FATHER IN THE HOUSEHOLD.
+temp.
+
+aggregate outfile=*
+/presorted
+/break=famnr6
+/fodtaarfarifam = MAX(fodtaarfar)
+/fodtaarmorifam = MAX(fodtaarmor)
+/lopenrfarifam = max(farlopenr)
+/lopenrmorifam =max(morlopenr).
+dataset name aggregert2.  
+execute.
+
+*SORT BOTH DATA SETS. 
+DATASET ACTIVATE hoved.
+MATCH FILES /FILE=*
+  /TABLE='aggregert2'
+  /BY famnr6.
+EXECUTE.
+
+DATASET CLOSE aggregert2.
+execute. 
+
+*****************************************************************************.
+* CALCULATE AGE DIFFERENCE BETWEEN POTENTIAL PARENTS AND OFFSPRING.
+* IT ONLY DOES THIS FOR PERSONS WHO ARE NOT THE POTENTIAL PARENT OR POTENTIAL MOTHER (lopenr_16~=lopenrfarifam).
+* OBS! fodtaarfarifam, fodt_aar, gyldigfamnr (numeric).
+* HERE I CHANGED gyldigfamnr6 =2 to =1.
+
+do if ((fodtaarfarifam>1800) & (gyldigfamnr6=1) & (lopenr_16~=lopenrfarifam) & (lopenr_16~=lopenrmorifam) & (fodt_aar>1800)).
+compute FARbarnAldersgap2= fodtaarfarifam-fodt_aar.
+end if.
+exe.
+
+
+do if ((fodtaarmorifam>1800) & (gyldigfamnr6=1) & (lopenr_16~=lopenrmorifam) & (lopenr_16~=lopenrfarifam) & (fodt_aar>1800)).
+compute MORbarnAldersgap2= fodtaarmorifam-fodt_aar.
+end if.
+exe.
+**********************************************************.
+* CREATES A VARIABLE THAT IS EQUAL TO 1 IF THE AGE DIFFERENCE IS 16 YEARS OR MORE. 
+
+compute gyldigmor=0.
+do if ((MORbarnAldersgap2<=-16)).
+compute gyldigmor=1.
+end if.
+exe.
+
+compute gyldigfar=0.
+do if ((FARbarnAldersgap2<=-16)).
+compute gyldigfar=1.
+end if.
+exe.
+
+***************************************************
+
+
+* DELETE INFO ABOUT SELF (NO INBREEDING) TO GET CLEAN DATA FOR OFFSPRING ONLY.
+* gyldigfamnr6 (NUMERIC).
+******************************************************************************************************
+************* CHANGE: fodtaarmorifam & fodtaarfarifam (STRING).
+******************************************************************************************************
+
+String Dummy_Variabel (a1).
+Execute.
+
+recode gyldigfamnr6  (sysmis= -999). 
+	do if ((lopenr_16=lopenrmorifam)).
+compute	fodtaarmorifam = dummy_Variabel.
+compute	lopenrmorifam =dummy_Variabel.
+	end if.
+recode   gyldigfamnr6(-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+recode gyldigfamnr6  (sysmis= -999). 
+	do if ((lopenr_16=lopenrfarifam)).
+compute	fodtaarfarifam = dummy_Variabel.
+compute	lopenrfarifam =dummy_Variabel.
+	end if.
+recode   gyldigfamnr6(-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+*IF AGE DIFFERENCE <16 YEARS, REMOVE THE LINK TO THE OLDER PERSON IN THE HOUSEHOLD FROM SOME VARIABLES.
+recode MORbarnaldersgap2  (sysmis= -999). 
+	do if ((morbarnaldersgap2>-16)).
+compute	fodtaarmorifam = dummy_Variabel.
+compute	lopenrmorifam =dummy_Variabel.
+	end if.
+recode   MORbarnaldersgap2 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+
+recode FARbarnaldersgap2  (sysmis= -999). 
+	do if ((FARbarnaldersgap2>-16)).
+compute	fodtaarfarifam = dummy_Variabel.
+compute	lopenrfarifam =dummy_Variabel.
+	end if.
+recode   FARbarnaldersgap2 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+
+******************************************************************************************************
+*REMEMBER TO SET FORELDER TO STRING.
+******************************************************************************************************
+*DON'T KNOW WHAT IT DOES, BUT IT'S RELATED TO "INBREEDING".
+
+recode oldwo60  (sysmis= -999). 
+	do if ((age60=oldwo60) & (famtype_60=3 | famtype_60=4) & (gyldigfamnr6=1) & (age60>15)).
+compute	forelder= dummy_Variabel.
+compute	fodtaarmorifam = dummy_Variabel.
+compute	lopenrmorifam =dummy_Variabel.
+	end if.
+recode   oldwo60 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+recode oldman60  (sysmis= -999). 
+	do if ((age60=oldman60) & (famtype_60=3 | famtype_60=5) & (gyldigfamnr6=1) & (age60>15)).
+compute	forelder= dummy_Variabel.
+compute	fodtaarfarifam = dummy_Variabel.
+compute	lopenrfarifam =dummy_Variabel.
+	end if.
+recode   oldman60 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+***************************************************************************************************************
+*YOU NEVER WISHED FOR A HUSBAND THAT WAS ALSO YOUR FATHER.
+*IF YOU ARE THE OLDEST WOMEN IN A HOUSEHOLD OF A PARTICULAR TYPE AND BORN BEFORE 1945.
+* THEN YOU CANNOT BE AN OFFSPRING, AND THE LINK TO THE OLDEST MAN IN THE HOUSEHOLD IS DELETED.
+recode oldwo60  (sysmis= -999). 
+	do if ((age60=oldwo60) & (famtype_60=3 | famtype_60=4) & (gyldigfamnr6=1) & (age60>15)).
+compute	forelder= dummy_Variabel.
+compute	fodtaarfarifam = dummy_Variabel.
+compute	lopenrfarifam =dummy_Variabel.
+	end if.
+recode   oldwo60 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+recode oldman60  (sysmis= -999). 
+	do if ((age60=oldman60) & (famtype_60=3 | famtype_60=5) & (gyldigfamnr6=1) & (age60>15)).
+compute	forelder= dummy_Variabel.
+compute	fodtaarmorifam = dummy_Variabel.
+compute	lopenrmorifam =dummy_Variabel.
+	end if.
+recode   oldman60 (-999=sysmis). /**arsj: tilbakekodes fra foran.
+exe.
+
+***************************************************************************************************************
+
+
+
+*ADD DATA FROM NFLC TO THE SSB VARIABLE.
+String mor_lopenr_nflc(a9).
+compute mor_lopenr_nflc = mor_lopenr_ny.
+Execute.
+
+do if (mor_lopenr_nflc="").
+compute mor_lopenr_nflc= lopenrmorifam.
+end if.
+exe.
+
+String far_lopenr_nflc(a9).
+compute far_lopenr_nflc = far_lopenr_ny.
+Execute.
+
+do if (far_lopenr_nflc="").
+compute far_lopenr_nflc= lopenrfarifam.
+end if.
+exe.
+
+
+
+* RUN FREQUENCIES WITH TABLES ON BELOW VARIABLES TO COUNT KINSHIPS ADDED BY NFLC.
+numeric lengdeMOR_lopenrSSB (f3.0).
+compute lengdeMOR_lopenrSSB= length(ltrim(rtrim(mor_lopenr_NY))).
+exe.
+
+numeric lengdeMOR_lopenrNFLC (f3.0).
+compute lengdeMOR_lopenrNFLC= length(ltrim(rtrim(mor_lopenr_nflc))).
+EXECUTE.
+
+numeric lengdeFAR_lopenrSSB (f3.0).
+compute lengdeFAR_lopenrSSB= length(ltrim(rtrim(far_lopenr_NY))).
+exe.
+
+numeric lengdeFAR_lopenrNFLC (f3.0).
+compute lengdeFAR_lopenrNFLC= length(ltrim(rtrim(far_lopenr_nflc))).
+exe.
+
+
+

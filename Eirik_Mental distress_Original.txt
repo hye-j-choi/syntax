@@ -1,0 +1,1111 @@
+                 # HI! PRESS "ALT+O" to condense script 
+
+########### I. RUN   ====
+### INTRO====
+# There is overlap between health surveys and some participants took part in >1 survey.
+# They are difficult to separate. Merging requires thought on how to handle the issue
+
+### PACKAGES
+#Package "foreign" to open SPSS files in R. PSYCH for describe. Car for recode.
+library(foreign) 
+library(psych)
+library(car)
+
+#Set WD to windows folder and read SPSS files to global environment 
+setwd("F:/Forskningsprosjekter/PDB 1932 - Alkohol drikkemønste_/Forskningsfiler/_Felles/Koblede filer/Alkohol//SOURCE FILES")
+
+### FUNCTIONS
+# Removes duplicated running numbers within  data set
+dupes = function(x) { x = subset(x, duplicated(lopenr_16)=="FALSE") ; x }
+
+# Creates numerical running number
+lnr = function(x) { x$lnr =as.numeric(gsub("A","", x$lopenr_16), by=x$lopenr_16) ; x } 
+
+########### II. MERGE ====
+### 1st Survey: CONOR====
+# Read data set ; remove duplicates ; create survey id
+CONOR =  as.data.frame( read.spss("Conor.sav")) 
+nrow(CONOR); CONOR = dupes(CONOR) ; nrow(CONOR) ; CONOR$surveyCON = as.character("conor") ; names(CONOR)
+CONOR = subset (CONOR, CONSENT_COMBINED_CO==1, select=c(lopenr_16,us, surveyCON, predikert_us_mnd_del2, aid_MARITAL_STATUS_CO, DAY_SURVEY_CO,  YEAR_SURVEY_CO, SEX_CO, AGE_CO,YEAR_BORN_CO, EDUCATION_CO,EDUCATION_YEARS_CO,
+                                                        CHILDREN_CO,PREGNANT_CO, WAIST_CO, HIP_CO,HEIGHT_CO,WEIGHT_CO, 
+                                                        CHOLESTEROL_CO, TRIGLYCERIDES_CO,GLUCOSE_CO,HDL_CO, 
+                                                        ALCOHOL_TIMES_L_YEAR_CO,ALCOHOL_TIMES_CO,ALCOHOL_CONSUMPTION_CO,BEER_GLASSES_CO,WINE_GLASSES_CO,SPIRITS_GLASSES_CO,
+                                                        ALCOHOL_GLASSES_L_YEAR_CO,ALCOHOL_GLASSES_24H_CO,BEER_CO,WINE_CO,SPIRITS_CO,TEETOTALLER_CO,
+                                                        SYSBP2_CO, SYSBP3_CO, DIABP2_CO, DIABP3_CO, HR2_CO, HR3_CO, 
+                                                        PHYS_ACT_LEISURE_LIGHT_CO, PHYS_ACT_LEISURE_HARD_CO,PHYS_ACT_LEISURE_CO, SMOKE_ROOMS_HOURS_CO, SMOKE_HOME_CHILD_CO,SMOKE_LIVE_TOGETHER_A20_CO,SMOKE_DAILY_NOW_CO,SMOKE_DAILY_NOW_OR_EVER_CO,CIGARETTES_CO,                
+                                                        CIGAR_CO,PIPE_CO,SMOKE_STOP_TIME_CO,CIGARETTES_NUMBER_CO,SMOKE_START_AGE_CO,SMOKE_YEARS_CO, 
+                                                        NERVOUS_CO, ANXIOUS_CO,CALM_CO,IRRITABLE_CO,HAPPY_CO,DEPRESSED_CO,LONELY_CO, PSYCHOLOGICAL_PROBLEMS_CO,FIBROMYALGIA_CO,WHIPLASH_CO, TRANQUILIZERS_4WEEKS_CO,ANTIDEPRESSANTS_4WEEKS_CO,
+                                                        HEART_ATTACK_CO, ANGINA_CO, STROKE_CO, ASTHMA_CO, DIABETES_CO, HEALTH_STATUS_CO,SLEEPLESS_FREQ_CO , SLEEPLESS_WORK_CO,
+                                                        LIPID_LOWERING_DRUGS_CO,BP_TREATMENT_CO,  COUGH_SPUTUM_CO,COUGH_DAILY_3MTH_CO,BRONCHITIS_CO,  HEART_DISEASE_RELATIVES_CO,MENOPAUSE_AGE_CO,                        
+                                                        WORK_SIT_PAID_WORK_CO, WORK_SIT_FT_HOUSEWORK_CO,WORK_SIT_U_EDUCATION_CO,WORK_SIT_UNEMPLOYED_CO,WORK_HOURS_WEEK_CO,PAID_WORK_CO,
+                                                        SICK_LEAVE_CO,PENSION_CO, REHABILITATION_CO,DISABILITY_PENSION_CO,UNEMPLOYMENT_BENEFIT_CO,SOCIAL_WELFARE_CO,WORK_SHIFT_CO))
+
+table(CONOR$NERVOUS_CO, CONOR$us)   # Exclude Oslo2, MoroII and I-hubro. 
+
+CONOR$select = ifelse(CONOR$us == 'Oslo 2' | CONOR$us == 'MoRo II' | CONOR$us == 'Innvandrer-HUBRO', 1,0) ; table(CONOR$select)
+
+CONOR = subset(CONOR, select==0)
+
+### 2nd Survey: Age 40 Program ====
+            # SELECT 94-99 [skjema 3 and 4] and desired variables
+A40P =  as.data.frame( read.spss("A40P.sav")) ; A40P$survey40 = as.character("A40P")
+A40P = subset(A40P, skjema=="1994-97" | skjema=="1997-99", select=c( lopenr_16, survey40, usmnd, usaar, periode, usstart,mott,skjema, fmnd, faar, kjonn, sstand_aid,         
+                                   hjinf,angina,hjslag,diabetes,bltrykk_1, astma,   
+                                   f_hjinf,   hoste,oppspytt, mosjon, l_aktiv, h_aktiv, hoyde, vekt, bmi, midje,hofte, 
+                                   systol_2, systol_3,   diasto_2, diasto_3, puls_2, puls_3,  smaltid, kolenz, trienz,hdl, glukose,hdlkol, 
+                                   avholdmk,alkomnd,ol_mngd,vin_mngd,brv_mngd,  
+                                   nervos,angst,trygg,irritert,gladopti,nedfor,ensom,egohelse, bltrykk_2,kol_senk,
+                                   svb_royk, ikke_rktp4,
+                                   roykfromp3, signaap3, rsigarp3, rpipep3, roykslutp3, sigfrap3, sigtilp3, roykaldp3, aarroyktp3,
+                                   roykfromp4, signaap4, rsigarp4, rpipep4, roykslutp4, sigfrap4, sigtilp4, roykaldp4, aarroyktp4, 
+                                   arbtrygd,ufpensj, arbakt,husmor,syketrgd,attforng, skarbeid, ald_frem))
+nrow(A40P) ; A40P = dupes(A40P) ; nrow(A40P) 
+    
+
+### COMBINE TWO SURVEYS (CONOR + AGE40) ====
+
+COHORT = merge(CONOR, A40P, all=TRUE, by="lopenr_16")
+
+nrow(CONOR) + nrow(A40P) ; nrow(COHORT)
+nrow(CONOR) + nrow(A40P) - nrow(COHORT)
+
+
+
+
+               
+
+########### III. REGSISTRIES  ====
+### 1. THE CAUSE OF DEATH REGISTRY====
+DEATH = as.data.frame( read.spss("DEATH.sav")) ; nrow(DEATH) ; DEATH = dupes(DEATH) ; nrow(DEATH) ; names(DEATH)
+DEATH = DEATH[ , c(
+                   "lopenr_16","DODSTIDSPUNKT", "DODSSTED_K_num", "EU_SHORTLIST_2012_K_num", "avledet_ICD_epoke", "avledet_CVD",
+                   "avledet_CVD", "avledet_CVD_CHD", "avledet_CVD_Cerbov")]
+COHORT = merge(x=COHORT, DEATH, all.x =TRUE, by="lopenr_16") 
+ 
+### 2. FS DATA (CVD HOSPITALIZATION DATABASE)   ====
+AMI = as.data.frame( read.spss("FS_AMI.sav")); nrow(AMI) ; AMI = dupes(AMI) ; nrow(AMI)
+AMI = AMI[, c("lopenr_16", "DIAGNOSE", "Indato", "Utskdato", "mulig_tidligere_AMI_I252", "mulig_tidligere_AMI_for_index_hendelse_I252",  
+              "FSdata_qa_temporal_integritet", "FSdata_qa_temporal_konsistens", "FSdata_qa_multipel_rekord")]
+names(AMI)[names(AMI) == 'DIAGNOSE'] <- 'DIAGNOSE_AMI'
+names(AMI)[names(AMI) == 'Indato'] <- 'Indato_AMI'
+names(AMI)[names(AMI) == 'Utskdato'] <- 'Utskdato_AMI'
+names(AMI)[names(AMI) == 'Indato'] <- 'Indato_AMI'
+names(AMI)[names(AMI) == 'FSdata_qa_temporal_integritet'] <- 'FSdata_qa_temporal_integritet_AMI'
+names(AMI)[names(AMI) == 'FSdata_qa_temporal_konsistens'] <- 'FSdata_qa_temporal_konsistens_AMI'
+names(AMI)[names(AMI) == 'FSdata_qa_multipel_rekord'] <- 'FSdata_qa_multipel_rekord_AMI'
+ 
+COHORT = merge(x=COHORT, AMI, all.x =TRUE, by="lopenr_16") 
+
+TOTS = as.data.frame( read.spss("FS_TOTS.sav")); nrow(TOTS) ; TOTS = dupes(TOTS) ; nrow(TOTS)
+TOTS = TOTS[, c("lopenr_16", "DIAGNOSE", "Indato", "Utskdato", "mulig_tidligere_TOTS_I69", "mulig_tidligere_TOTS_for_index_hendelse_I69",
+                "FSdata_qa_temporal_integritet", "FSdata_qa_temporal_konsistens", "FSdata_qa_multipel_rekord")]
+names(TOTS)[names(TOTS) == 'DIAGNOSE'] <- 'DIAGNOSE_TOTS'
+names(TOTS)[names(TOTS) == 'Indato'] <- 'Indato_TOTS'
+names(TOTS)[names(TOTS) == 'Utskdato'] <- 'Utskdato_TOTS'
+names(TOTS)[names(TOTS) == 'Indato'] <- 'Indato_TOTS'
+names(TOTS)[names(TOTS) == 'FSdata_qa_temporal_integritet'] <- 'FSdata_qa_temporal_integritet_TOTS'
+names(TOTS)[names(TOTS) == 'FSdata_qa_temporal_konsistens'] <- 'FSdata_qa_temporal_konsistens_TOTS'
+names(TOTS)[names(TOTS) == 'FSdata_qa_multipel_rekord'] <- 'FSdata_qa_multipel_rekord_TOTS'
+
+COHORT = merge(x=COHORT, TOTS, all.x =TRUE, by="lopenr_16") 
+
+### 3. NATIONAL EDUCATION DATABASE  ====
+EDU  = as.data.frame( read.spss("EDUCATION.sav")) ; EDU  = dupes(EDU) ; names(EDU)
+EDU = EDU[, c("lopenr_16", "BU_2012")]
+COHORT = merge(x=COHORT, EDU, all.x =TRUE, by="lopenr_16") 
+
+### 4. DEMOGRAPHIC DATABASE ====
+DEMO = as.data.frame( read.spss("DEMOGRAPHY.sav")) ; DEMO = dupes(DEMO) ; names(DEMO)
+names(DEMO)[names(DEMO) == 'faar'] <- 'faarDEMO'
+names(DEMO)[names(DEMO) == 'fmnd'] <- 'fmndDEMO'
+COHORT = merge(x=COHORT, DEMO, all.x =TRUE, by="lopenr_16") 
+
+
+########### SAVE/LOAD   ====
+### SAVE====
+raw = COHORT
+save(raw, file="raw_mental2.RData") #save file as r format
+
+
+### LOAD==== 
+load("raw_mental2.RData")
+
+
+########### IV. CLEAN =====
+### 1. BASIC DEMOGRAPHIC INFORMATION ==== 
+raw$studyCON <- recode(raw$us, "1='TROMSO4';2='HUNT2';3='HUSK';4='HUBRO';5='OPPHED';6='TROMSO5';7='Rest-Troms';8='Rest-Finn';9='Oslo2';10='MoRo2';11='I-HUBRO'")
+raw$study40 <- recode(raw$skjema, "'1994-97'='Age40P94-97'; '1997-99'='Age40P97-99'; else=NA")
+
+# 1-1. DATE BIRTH
+raw$fdate = as.Date(paste((raw$faarDEMO), raw$fmndDEMO, 15, sep="-"), format = "%Y-%m-%d")
+
+# 1-2. DATE SURVEY
+raw$usmndCON1 <- recode(raw$predikert_us_mnd_del2, "-3=NA; 15=NA")
+raw$usdateCON1 <-as.Date(paste(raw$YEAR_SURVEY_CO, raw$usmndCON1, raw$DAY_SURVEY_CO, sep="-"), format = "%Y-%m-%d")        
+#raw$ugyldig <- ifelse(is.na(raw$usdateCON1) & raw$us>0, yes=1, no=NA)
+#Estimated month is impercise, thus some error among day 29,30,31. Workaround by subtracting -1 from month for relevant dates.
+raw$usmndCON2 <- ifelse(is.na(raw$usdateCON1), yes=raw$usmndCON1-1, no=raw$usmndCON1)                               
+raw$usdateCON <-as.Date(paste(raw$YEAR_SURVEY_CO, raw$usmndCON2, raw$DAY_SURVEY_CO, sep="-"), format = "%Y-%m-%d")             
+raw$usdate40 <- as.Date(paste((1900+raw$usaar) , raw$usmnd,  15,  sep="-"), format = "%Y-%m-%d")   #A40P
+
+raw$ageCON <- raw$AGE_CO
+raw$age40 <- as.numeric((raw$usdate40 - raw$fdate)/365.25)
+
+raw$sex <- recode(as.numeric(raw$kjoenn), "2=0; 1=1") # 0=W, 1=M
+
+# 1-3 MARITAL STATUS 1=unmarried/single, 2=married/registrated partner/sambo, 3=widower, 4=divorced(separated) 
+    # Health surveys do not identify "samboere(cohabitants/partners)" and might label them together with singles. Twins differentiates, do not say legal.
+raw$msCON <- recode(as.numeric(raw$aid_MARITAL_STATUS_CO), "1=1; 2=2; 3=3; 4:5=4")                     
+raw$ms40 <- recode(as.numeric(raw$sstand), "1=1; 2=2; 3=3; 4:5=4")                 
+
+
+### 2. RISK FACTORS ==== 
+# 2-1. HEIGHT                  
+raw$HEIGHT_CO <- recode(raw$HEIGHT_CO, "16.3=163")
+
+# 2-2. BMI
+raw$bmiCON <- raw$WEIGHT_CO/(raw$HEIGHT_CO/100)^2
+raw$bmi40 <- raw$bmi
+
+# 2-3. BLOOD PRESSURE AND HEART RATE
+# Combine measurement 2 and 3 to exclude white coat effect, from Inger Ariansens and Jon Wickmans file: "Define_vars_art4_v29_45-60.do"
+# CONOR:  SYSBP2_CO, SYSBP3_CO, DIABP2_CO, DIABP3_CO, HR2_CO, HR3_CO                   
+# COUNTY: u3syst2, u3syst3, u3dias2, u3dias3, u3bpuls2, u3bpuls3
+# A40P:   systol_2, systol_3, diasto_2, diasto_3, puls_2, puls_3                       
+
+# 2-3-1. SYSTOLIC BLOOD PRESSURE                                                                                    
+raw$SYSBP2_CO[raw$SYSBP2_CO == 0] <- NA              
+raw$SYSBP3_CO[raw$SYSBP3_CO == 0] <- NA 
+raw$sysCON <- (raw$SYSBP2_CO + raw$SYSBP3_CO)/2                              
+raw[is.na(raw[,"sysCON"]),"sysCON"] <- raw[is.na(raw[,"sysCON"]),"SYSBP2_CO"]
+raw[is.na(raw[,"sysCON"]),"sysCON"] <- raw[is.na(raw[,"sysCON"]),"SYSBP3_CO"]
+
+raw$sys40 <- (raw$systol_2 + raw$systol_3)/2                              
+raw[is.na(raw[,"sys40"]),"sys40"] <- raw[is.na(raw[,"sys40"]),"systol_2"]
+raw[is.na(raw[,"sys40"]),"sys40"] <- raw[is.na(raw[,"sys40"]),"systol_3"]
+
+# 2-3-2. DIASTOLIC BLOOD PRESSURE   
+raw$DIABP2_CO[raw$DIABP2_CO == 0] <- NA              
+raw$DIABP3_CO[raw$DIABP3_CO == 0] <- NA   
+raw$diaCON <- (raw$DIABP2_CO + raw$DIABP3_CO)/2                              
+raw[is.na(raw[,"diaCON"]),"diaCON"] <- raw[is.na(raw[,"diaCON"]),"DIABP2_CO"]
+raw[is.na(raw[,"diaCON"]),"diaCON"] <- raw[is.na(raw[,"diaCON"]),"DIABP3_CO"]
+raw$dia40 <- (raw$diasto_2 + raw$diasto_3)/2                              
+raw[is.na(raw[,"dia40"]),"dia40"] <- raw[is.na(raw[,"dia40"]),"diasto_2"]
+raw[is.na(raw[,"dia40"]),"dia40"] <- raw[is.na(raw[,"dia40"]),"diasto_3"]
+
+# 2-3-3. HEART RATE
+raw$HR2_CO[raw$HR2_CO == 0] <- NA              
+raw$HR3_CO[raw$HR2_CO == 0] <- NA     
+raw$pulseCON <- (raw$HR2_CO + raw$HR3_CO)/2                              
+raw[is.na(raw[,"pulseCON"]),"pulseCON"] <- raw[is.na(raw[,"pulseCON"]),"HR2_CO"]
+raw[is.na(raw[,"pulseCON"]),"pulseCON"] <- raw[is.na(raw[,"pulseCON"]),"HR3_CO"]
+
+raw$pulse40 <- (raw$puls_2 + raw$puls_3)/2                              
+raw[is.na(raw[,"pulse40"]),"pulse40"] <- raw[is.na(raw[,"pulse40"]),"puls_2"]
+raw[is.na(raw[,"pulse40"]),"pulse40"] <- raw[is.na(raw[,"pulse40"]),"puls_3"]
+
+
+### 3. FMAILY HISTORY OF CVD DISEASE ====
+# 3-1. AMI
+raw$histamiCON <- recode(as.numeric(raw$HEART_ATTACK_CO), "1=0; 2:3=1")
+raw$histami40 <- ifelse(as.numeric(raw$hjinf)<=1,1,0)
+
+# 3-2. ANGINA PECTORIS 
+raw$histangCON <- recode(as.numeric(raw$ANGINA_CO), "1=0; 2:3=1")
+raw$histang40 <- ifelse(as.numeric(raw$angina)<=1,1,0)
+
+# 3-3. STROKE 
+raw$histslagCON <- recode(as.numeric(raw$STROKE_CO), "1=0; 2:3=1")
+raw$histslag40 <- ifelse(as.numeric(raw$hjslag)==1,1,0)
+
+# 3-4. FAMILY HISTORY of MI/ANGINA
+raw$familyCON <- recode(as.numeric(raw$HEART_DISEASE_RELATIVES_CO), "1=0; 2=1; 3=0")
+raw$family40 <- ifelse(as.numeric(raw$f_hjinf)<=1,1,0)
+
+# 3-5. DIABETES
+raw$diabetesCON <- recode(as.numeric(raw$DIABETES_CO), "1=0; 2:3=1")                #CONOR
+raw$diabetes40 <- ifelse(as.numeric(raw$diabetes)<=1,1,0)        #A40P
+
+# 3-6. HYPERTENSION    (Self-report of current treatment)
+raw$htCON <- recode(as.numeric(raw$BP_TREATMENT_CO), "1:2=1; 3=0")        #CONOR
+raw$ht40 <- ifelse(as.numeric(raw$bltrykk_2)<=1,1,0)             #A40P
+
+# 3-7. STATINS         (for HU40 periode 3,4 i HU40 and CONOR us >4)
+raw$statCON <- recode(as.numeric(raw$LIPID_LOWERING_DRUGS_CO),"1:2=1; 3=0")   #CONOR
+raw$stat40 <- ifelse(as.numeric(raw$kol_senk)<=1,1,0)           #A40P  
+
+
+### 4. BLOOD ====
+# 4-1. CHOLESTEROL   "Total cholesterol (mmol/l)"                                              
+raw$colCON <- raw$CHOLESTEROL_CO                                
+raw$col40 <- raw$kolenz                    
+
+# 4-2. TRIGLYCERIDES   "Triglycerides (mmol/l)" 
+raw$triCON <- raw$TRIGLYCERIDES_CO                                        
+raw$tri40 <- raw$trienz                                  
+
+# 4-3. HDL            "HDL cholesterol (mmol/l)" 
+raw$hdlCON <- raw$HDL_CO                                   
+raw$hdl40 <- raw$hdlkol                                        
+
+
+### 5. PHYSICAL ACTIVITY ====
+#Physical activity  No data for Oslo2 (us=9)
+#Exercise (mosjon)
+raw$mosjCON <- as.numeric(raw$PHYS_ACT_LEISURE_CO)                                  
+
+raw$mosj40 <- as.numeric(raw$mosjon)                      
+
+#Intensity (CONOR us 4-11, not assessed in COUNTIES, all in A40P)
+raw$fyshCON <- recode(as.numeric(raw$PHYS_ACT_LEISURE_HARD_CO), "NA=0")                                         
+raw$fyslCON <- recode(as.numeric(raw$PHYS_ACT_LEISURE_LIGHT_CO), "1=10; 2=20; 3=30; 4=40; NA=0")                                    
+raw$fysiCON <- raw$fyshCON + raw$fyslCON
+raw$fysiCON <- recode(raw$fysiCON, "c(1,10,11,20,21,30,31,41)=1; c(2,22,32,40,42)=2; c(3,13,23,33,43)=3; c(4,14,24,34,44)=4; else=NA")
+raw$fysh40 <- recode(as.numeric(raw$h_aktiv), "NA=0") ; table(raw$fysh40)                         
+raw$fysl40 <- recode(as.numeric(raw$l_aktiv), "1=0; 2=10; 3=20; 4=30; 5=40; NA=0")   ; table(raw$fysl40)
+raw$fysi40 <- raw$fysh40 + raw$fysl40
+raw$fysi40 <- recode(raw$fysi40, "c(1,10,11,20,21,30,31,41)=1; c(2,22,32,40,42)=2; c(3,13,23,33,43)=3; c(4,14,24,34,44)=4; else=NA")
+#Combined
+raw$fysCON <- raw$mosjCON
+raw[is.na(raw[,"fysCON"]),"fysCON"] <- raw[is.na(raw[,"fysCON"]),"fysiCON"]
+raw$fys40 <- raw$mosj40
+raw[is.na(raw[,"fys40"]),"fys40"] <- raw[is.na(raw[,"fys40"]),"fysi40"]
+
+
+### 6. SMOKE CON====
+# 6-1. CONOR SURVEY
+##### 6-1-1. SMOKER ###
+##First identify smokers by combining variables for smoking, cigarettes, pipe and cigar. 
+#Secondly identify leftovers (NAs) who responded to another tobacco-related question.
+    raw$fumeCON <- recode(as.numeric(raw$SMOKE_DAILY_NOW_CO), "1=0;2=1; NA=10")
+    raw$siggCON <- recode(as.numeric(raw$CIGARETTES_CO), "1=0; 2=1; 3=0; NA=10")
+    raw$pipeCON <- recode(as.numeric(raw$PIPE_CO), "1=0; 2=1; 3=0; NA=10")
+    raw$cigarCON <- recode(as.numeric(raw$CIGAR_CO),"1=0; 2=1; 3=0; NA=10")
+    raw$smokeCON <- raw$fumeCON + raw$siggCON + raw$pipeCON + raw$cigarCON
+    raw$smokeCON <- recode(raw$smokeCON, "c(2,3,4,11,12,13,21,22,31)=1; c(10,20,30)=0;40=NA")                
+    raw$SMOKE_YEARS_CO2 <- recode(raw$SMOKE_YEARS_CO, "0=0; else=NA")                                      # Leftovers
+    raw$SMOKE_START_AGE_CO2 <- recode(raw$SMOKE_START_AGE_CO, "0=0; else=NA")
+    raw$SMOKE_STOP_TIME_CO2 <- recode(raw$SMOKE_STOP_TIME_CO, "0=0; else=NA")
+    raw$CIGARETTES_NUMBER_CO2 <- recode(raw$CIGARETTES_NUMBER_CO, "0=0; else=NA")                
+    raw[is.na(raw[,"smokeCON"]),"smokeCON"] <- raw[is.na(raw[,"smokeCON"]),"SMOKE_YEARS_CO2"]
+    raw[is.na(raw[,"smokeCON"]),"smokeCON"] <- raw[is.na(raw[,"smokeCON"]),"SMOKE_START_AGE_CO2"]
+    raw[is.na(raw[,"smokeCON"]),"smokeCON"] <- raw[is.na(raw[,"smokeCON"]),"SMOKE_STOP_TIME_CO2"]
+    raw[is.na(raw[,"smokeCON"]),"smokeCON"] <- raw[is.na(raw[,"smokeCON"]),"CIGARETTES_NUMBER_CO2"]                
+
+##### 6-1-2. FORMER SMOKER ###
+#bring out missing to avoid deselection 
+  raw$dummy = recode(raw$smokeCON, "0=0; 1=1; else=100") ; table(raw$dummy)
+
+#select formersmokers and remove inconcistent individuals also reporting being a smoker
+  raw$select1 = recode(as.character(as.numeric(raw$SMOKE_DAILY_NOW_OR_EVER_CO)), "2=1 ; else=NA") ; table(raw$select1)
+  raw$select1 = ifelse(raw$dummy==1, NA, raw$select1) ; table(raw$select1)
+
+#identify former smokers by variables related to smoking intensity and by conditioning that they are not a current smoker
+  raw$select2 = ifelse(raw$SMOKE_STOP_TIME_CO>=0 & raw$dummy==!1, 1, NA) ; table(raw$select2)
+  raw$select3 = ifelse(raw$SMOKE_YEARS_CO>=0 & raw$dummy==!1, 1, NA) ; table(raw$select3)
+  raw$select4 = ifelse(raw$SMOKE_START_AGE_CO>=0 & raw$dummy==!1, 1, NA) ; table(raw$select4)
+  raw$select5 = ifelse(raw$CIGARETTES_NUMBER_CO>=0 & raw$dummy==!1, 1, NA) ; table(raw$select5)
+#to avoid missing individuals, add sequentially the variables to construct the former smoking variable
+  raw$smoke_formerCON = raw$select1 ; table(raw$smoke_formerCON)
+  raw[is.na(raw[,"smoke_formerCON"]),"smoke_formerCON"] <- raw[is.na(raw[,"smoke_formerCON"]),"select2"]; table(raw$smoke_formerCON)
+  raw[is.na(raw[,"smoke_formerCON"]),"smoke_formerCON"] <- raw[is.na(raw[,"smoke_formerCON"]),"select3"]; table(raw$smoke_formerCON)
+  raw[is.na(raw[,"smoke_formerCON"]),"smoke_formerCON"] <- raw[is.na(raw[,"smoke_formerCON"]),"select4"]; table(raw$smoke_formerCON)
+  raw[is.na(raw[,"smoke_formerCON"]),"smoke_formerCON"] <- raw[is.na(raw[,"smoke_formerCON"]),"select5"]; table(raw$smoke_formerCON)
+
+##### 6-1-3. NEVER SMOKER #
+#bring out missing to avoid deselection 
+  raw$dummy2 = recode(raw$smoke_formerCON, "1=1; else=100") ; table(raw$dummy2)
+
+# identify never smokers from a question and then remove those who also have reported being a current smoker or a former smoker on other questions
+  raw$smoke_neverCON = recode(as.character(as.numeric(raw$SMOKE_DAILY_NOW_OR_EVER_CO)), "3=1 ; else=NA") ; table(raw$smoke_neverCON)
+  raw$smoke_neverCON = ifelse(raw$dummy==1, NA, raw$smoke_neverCON) ; table(raw$smoke_neverCON)
+  raw$smoke_neverCON = ifelse(raw$dummy2==1, NA, raw$smoke_neverCON) ; table(raw$smoke_neverCON)
+   
+### 6-1-4. SMOKE AMOUNT ###  
+    raw$smoke_amountCON = raw$CIGARETTES_NUMBER_CO
+    
+### 6-1-5. SMOKE YEARS ###    
+    raw$smoke_yearsCON = raw$SMOKE_YEARS_CO
+  
+### 6-1-6. PACK YEARS ###
+  raw$pack_yearsCON = (raw$smoke_amountCON/20)*raw$smoke_yearsCON ; hist(raw$pack_yearsCON) ; describe(raw$pack_yearsCON)
+  
+### 6-1-7. SMOKING STATUS ###
+#never smokers = 0 
+  raw$smoke_statusCON = ifelse(raw$smoke_neverCON==1, 0, NA) ; table(raw$smoke_statusCON)
+#former smokers = 1
+  raw[is.na(raw[,"smoke_statusCON"]),"smoke_statusCON"] <- raw[is.na(raw[,"smoke_statusCON"]),"smoke_formerCON"]; table(raw$smoke_statusCON)
+#recode pack-years to distinguish between those with more or less than 20
+  raw$select2 = recode(raw$pack_yearsCON, "0:20=0; 20:100000=1; else=2") ; table(raw$select2)
+#former smokers with more than 20 pack years = 2
+  raw$smoke_statusCON = ifelse(raw$select2 == 1 & raw$smoke_statusCON==1, 2, raw$smoke_statusCON) ; table(raw$smoke_statusCON)
+#current smokers =3
+  raw$select = recode(raw$smokeCON, "1=3; else=NA") ; table(raw$select)
+  raw[is.na(raw[,"smoke_statusCON"]),"smoke_statusCON"] <- raw[is.na(raw[,"smoke_statusCON"]),"select"]; table(raw$smoke_statusCON)
+#current smokers with +20 pack years = 4
+  raw$smoke_statusCON = ifelse(raw$select2 == 1 & raw$smoke_statusCON==3, 4, raw$smoke_statusCON) ; table(raw$smoke_statusCON)
+
+### 6-1-8. CORRECTION ###  
+# identify individuals who responded being a current no-smoker, but who did not respond to further questions
+    raw$select = ifelse(raw$smokeCON==0 & is.na(raw$smoke_statusCON), 1,NA) ; table(raw$select) 
+  
+#check the education level compared with other smoking status populations
+   describe(raw$education[raw$select==1]) ; describeBy(raw$education, raw$smoke_statusCON)
+
+#assuming they are never smokers, add them to never smokers variable
+  raw[is.na(raw[,"smoke_neverCON"]),"smoke_neverCON"] <- raw[is.na(raw[,"smoke_neverCON"]),"select"]; table(raw$smoke_neverCON)
+#set to 0 and add to smoking status variable   
+  raw$select[raw$select==1] = 0 ; table(raw$select)
+  table(raw$smoke_statusCON)
+  raw[is.na(raw[,"smoke_statusCON"]),"smoke_statusCON"] <- raw[is.na(raw[,"smoke_statusCON"]),"select"]; table(raw$smoke_statusCON)
+
+
+# 6-2. AGE 40 PROGRAM
+##### 6-2-1. SMOKER ###
+#Wave3
+  raw$fume40A <- recode(as.numeric(raw$signaap3), "2=0; NA=10")
+  raw$pipe40A <- recode(as.numeric(raw$rpipep3), "2=0; NA=10")
+  raw$cigar40A <- recode(as.numeric(raw$rsigarp3), "2=0; NA=10")
+  raw$smoke40A <- raw$fume40A + raw$pipe40A + raw$cigar40A
+  raw$smoke40A <- recode(raw$smoke40A, "c(2,3,11,12,21)=1; c(10,20)=0; 30=NA")
+    #raw$aarroyktp3_2 <- recode(raw$aarroyktp3, "0=0; else=NA")                                          #No leftovers
+    #raw$roykaldp3_2 <- recode(raw$roykaldp3, "0=0; else=NA")
+    #raw$sigtilp3_2 <- recode(raw$sigtilp3, "0=0; else=NA")
+    #raw$sigfrap3_2 <- recode(raw$sigfrap3, "0=0; else=NA")
+    #raw[is.na(raw[,"smoke40A"]),"smoke40A"] <- raw[is.na(raw[,"smoke40A"]),"aarroyktp3_2"]
+    #raw[is.na(raw[,"smoke40A"]),"smoke40A"] <- raw[is.na(raw[,"smoke40A"]),"roykaldp3_2"]
+    #raw[is.na(raw[,"smoke40A"]),"smoke40A"] <- raw[is.na(raw[,"smoke40A"]),"sigtilp3_2"]
+    #raw[is.na(raw[,"smoke40A"]),"smoke40A"] <- raw[is.na(raw[,"smoke40A"]),"sigfrap3_2"]          
+#Wave4
+  raw$fume40B <- recode(as.numeric(raw$signaap4), "2=0; NA=10")
+  raw$pipe40B <- recode(as.numeric(raw$rpipep4), "2=0; NA=10")
+  raw$cigar40B <- recode(as.numeric(raw$rsigarp4), "2=0; NA=10")
+  raw$smoke40B <- raw$fume40B + raw$pipe40B + raw$cigar40B
+  raw$smoke40B <- recode(raw$smoke40B, "c(2,3,11,12,21)=1; c(10,20)=0; 30=NA")                          #Leftovers
+  raw$aarroyktp4_2 <- recode(raw$aarroyktp4, "0=0; else=NA")
+  raw$roykaldp4_2 <- recode(raw$roykaldp4, "0=0; else=NA")
+  raw$sigtilp4_2 <- recode(raw$sigtilp4, "0=0; else=NA")
+  raw$sigfrap4_2 <- recode(raw$sigfrap4, "0=0; else=NA")
+  raw$ikke_rktp4_2 <- recode(as.numeric(raw$ikke_rktp4), "1=0")
+  raw[is.na(raw[,"smoke40B"]),"smoke40B"] <- raw[is.na(raw[,"smoke40B"]),"aarroyktp4_2"]
+  raw[is.na(raw[,"smoke40B"]),"smoke40B"] <- raw[is.na(raw[,"smoke40B"]),"roykaldp4_2"]
+  raw[is.na(raw[,"smoke40B"]),"smoke40B"] <- raw[is.na(raw[,"smoke40B"]),"sigtilp4_2"]
+  raw[is.na(raw[,"smoke40B"]),"smoke40B"] <- raw[is.na(raw[,"smoke40B"]),"sigfrap4_2"]
+  raw[is.na(raw[,"smoke40B"]),"smoke40B"] <- raw[is.na(raw[,"smoke40B"]),"ikke_rktp4_2"]
+
+  #Wave3+4
+    raw$smoke40AA <- recode(raw$smoke40A, "NA=30")
+    raw$smoke40BB <- recode(raw$smoke40B, "NA=100")
+    raw$smoke40 <- raw$smoke40AA + raw$smoke40BB
+    raw$smoke40 <- recode(raw$smoke40, "c(1,31,101)=1; c(30,100)=0; 130=NA")
+
+#### 6-2-2. Former smoke  ##  
+    #bring out missing to avoid deselection 
+    raw$dummy = recode(raw$smoke40, "0=0; 1=1; else=100") ; table(raw$dummy)
+
+#wave 3    
+    #identify former smokers by variables related to smoking intensity and by conditioning that they are not a current smoker
+    raw$select1 = ifelse(raw$roykslutp3>=0 & raw$dummy==!1, 1, NA) ; table(raw$select1)
+    raw$select2 = ifelse(raw$aarroyktp3>=0 & raw$dummy==!1, 1, NA) ; table(raw$select2)
+    raw$select3 = ifelse(raw$roykaldp3>=0 & raw$dummy==!1, 1, NA) ; table(raw$select3)
+    raw$select4 = ifelse(raw$sigtilp3>=0 & raw$dummy==!1, 1, NA) ; table(raw$select4)
+    raw$select5 = ifelse(raw$sigfrap3>=0 & raw$dummy==!1, 1, NA) ; table(raw$select5)
+    
+    raw$select6 = ifelse(raw$roykslutp4>=0 & raw$dummy==!1, 1, NA) ; table(raw$select6)
+    raw$select7 = ifelse(raw$aarroyktp4>=0 & raw$dummy==!1, 1, NA) ; table(raw$select7)
+    raw$select8 = ifelse(raw$roykaldp4>=0 & raw$dummy==!1, 1, NA) ; table(raw$select8)
+    raw$select9 = ifelse(raw$sigtilp4>=0 & raw$dummy==!1, 1, NA) ; table(raw$select9)
+    raw$select10 = ifelse(raw$sigfrap4>=0 & raw$dummy==!1, 1, NA) ; table(raw$select10)
+    
+    #to avoid missing individuals, add sequentially the variables to construct the former smoking variable
+    raw$smoke_former40 = raw$select1 ; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select2"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select3"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select4"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select5"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select6"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select7"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select8"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select9"]; table(raw$smoke_former40)
+    raw[is.na(raw[,"smoke_former40"]),"smoke_former40"] <- raw[is.na(raw[,"smoke_former40"]),"select10"]; table(raw$smoke_former40)
+
+##### 6-2-3. NEVER SMOKER #
+#bring out missing to avoid deselection 
+    raw$dummy2 = recode(raw$smoke_former40, "1=1; else=100") ; table(raw$dummy2)
+    
+# identify those who didn't report any smoking-related behaviour
+   raw$select1 = recode(raw$roykslutp3, "0:1000=1; else=0") ; table(raw$select1)
+   raw$select2 = recode(raw$aarroyktp3, "0:1000=1; else=0") ; table(raw$select2)
+   raw$select3 = recode(raw$roykaldp3, "0:1000=1; else=0") ; table(raw$select3)
+   raw$select4 = recode(raw$roykslutp4, "0:1000=1; else=0") ; table(raw$select4)
+   raw$select5 = recode(raw$aarroyktp4, "0:1000=1; else=0") ; table(raw$select5)
+   raw$select6 = recode(raw$roykaldp4, "0:1000=1; else=0") ; table(raw$select6)
+#define neversmoker if he/she is neither a current, nor former smoking, nor report any smoking-related behaviour
+  raw$smoke_never40 = ifelse(raw$dummy==0 & raw$dummy2==100 
+                              & raw$select1==0 & raw$select2==0 & raw$select3==0 
+                              & raw$select4==0 & raw$select5==0 & raw$select6==0, 1,NA) ; table(raw$smoke_never40)
+  
+### 6-2-4. SMOKE AMOUNT ###
+# function to chose the highest of the two variables
+    max.pro <- function(drikke3){
+    if(sum(is.na(drikke3)) == 3) return(NA)
+    if(sum(is.na(drikke3)) < 3) return(max(drikke3, na.rm = rm))
+  }
+# chose the highest of the two variables  
+    raw$select1 =  apply(X = raw[, c("sigtilp3","sigfrap3")], MARGIN = 1, FUN = max.pro)
+    raw$select2 =  apply(X = raw[, c("sigtilp4","sigfrap4")], MARGIN = 1, FUN = max.pro)
+# set generated -Inf = NA
+    raw$select1[raw$select1==-Inf] = NA
+    raw$select2[raw$select2==-Inf] = NA
+# merge variables
+    raw$smoke_amount40 = raw$select1
+    raw[is.na(raw[,"smoke_amount40"]),"smoke_amount40"] <- raw[is.na(raw[,"smoke_amount40"]),"select2"]
+    table(raw$smoke_amount) ; sum(table(raw$select1)) + sum(table(raw$select2)) ; sum(table(raw$smoke_amount40))
+  
+### 6-2-5. SMOKE YEARS ###
+    raw$smoke_years40 = raw$aarroyktp3
+    raw[is.na(raw[,"smoke_years40"]),"smoke_years40"] <- raw[is.na(raw[,"smoke_years40"]),"aarroyktp4"]
+    table(raw$smoke_years40) ; sum(table(raw$smoke_years40)) ; sum(table(raw$aarroyktp3)) + sum(table(raw$aarroyktp4)) 
+    
+### 6-2-6. PACK YEARS ###
+raw$pack_years40 = (raw$smoke_amount40/20)*raw$smoke_years40
+  
+### 6-2-7. SMOKE STATUS ###  
+  #never smokers = 0 
+  raw$smoke_status40 = ifelse(raw$smoke_never40==1, 0, NA) ; table(raw$smoke_status40)
+  #former smokers = 1
+  raw[is.na(raw[,"smoke_status40"]),"smoke_status40"] <- raw[is.na(raw[,"smoke_status40"]),"smoke_former40"]; table(raw$smoke_status40)
+  #recode pack-years to distinguish between those with more or less than 20
+  raw$select2 = recode(raw$pack_years40, "0:20=0; 20:100000=1; else=2") ; table(raw$select2)
+  #former smokers with more than 20 pack years = 2
+  raw$smoke_status40 = ifelse(raw$select2 == 1 & raw$smoke_status40==1, 2, raw$smoke_status40) ; table(raw$smoke_status40)
+  #current smokers =3
+  raw$select = recode(raw$smoke40, "1=3; else=NA") ; table(raw$select)
+  raw[is.na(raw[,"smoke_status40"]),"smoke_status40"] <- raw[is.na(raw[,"smoke_status40"]),"select"]; table(raw$smoke_status40)
+  #current smokers with +20 pack years = 4
+  raw$smoke_status40 = ifelse(raw$select2 == 1 & raw$smoke_status40==3, 4, raw$smoke_status40) ; table(raw$smoke_status40)
+  
+     
+### 7. PSYCHOLOGICAL STATUS FROM CONOR AND AGE40 PROGRAM ====
+    #CONOR/A40P: Have you felt X during the last two weeks (1=Not, 2=some, 3=quite, 4=much)
+    #TWIN:  1=Not at all, 2=a little, 3=Medium, 4=pretty much, 5=very much, 9=multiple crosses) Combine 3 and 4, exclude 9.
+raw$nervCON <- as.numeric(raw$NERVOUS_CO)
+raw$nerv40 <- as.numeric(raw$nervos)
+
+raw$anxCON <- as.numeric(raw$ANXIOUS_CO)
+raw$anx40 <- as.numeric(raw$angst)
+
+raw$calmCON <- as.numeric(raw$CALM_CO)
+raw$calm40 <- as.numeric(raw$trygg)
+
+raw$irrCON <- as.numeric(raw$IRRITABLE_CO)
+raw$irr40 <- as.numeric(raw$irritert)
+
+raw$happyCON <- as.numeric(raw$HAPPY_CO)
+raw$happy40 <- as.numeric(raw$gladopti)
+
+raw$deprCON <- as.numeric(raw$DEPRESSED_CO)
+raw$depr40 <- as.numeric(raw$nedfor)
+
+raw$lonelyCON <- as.numeric(raw$LONELY_CO)
+raw$lonely40 <- as.numeric(raw$ensom)
+
+raw$psychCON <- recode(as.numeric(raw$PSYCHOLOGICAL_PROBLEMS_CO), "1=0;2=1;3=1") ; table(raw$psychCON)          
+raw$psych40 <- as.numeric(rep(NA, dim(raw)[1]))
+
+raw$fibroCON <- recode(as.numeric(raw$FIBROMYALGIA_CO), "1=0; 2=1; 3=1") ; table(raw$fibroCON)                
+raw$fibro40 <- as.numeric(rep(NA, dim(raw)[1]))
+
+raw$tranqCON = recode(as.numeric(raw$TRANQUILIZERS_4WEEKS_CO), "1=0; 2=1; 3=2; 4=3") ; table(raw$tranqCON) # How often during past 4 weeks (1=not, 2=<weekly, 3=weekly, 4=daily)
+raw$tranq40 <- as.numeric(rep(NA, dim(raw)[1]))
+raw$antidepCON = recode(as.numeric(raw$ANTIDEPRESSANTS_4WEEKS_CO), "1=0; 2=1; 3=2; 4=3") ; table(raw$antidepCON) # How often during past 4 weeks (1=not, 2=<weekly, 3=weekly, 4=daily)
+raw$antidep40 <- as.numeric(rep(NA, dim(raw)[1]))
+
+
+### 8. EDUCATION LEVEL FROM THE NATIONAL EDUCATION DATABASE  ====
+#0=No, 1=Primary, 2=Secondary, 3=High, 4=finisher, 5=almenn påbygging, 6=Uni_any, 7=Uni_master, 8=phD, 9=NA
+raw$education = substr(as.numeric(as.character(raw$BU_2012)),1,1)
+raw$education[raw$education==9]=1 # 0 are coded as 9 above
+raw$edu <- recode(raw$education, "1:2=0; 3:5=1; 6:8=2")
+raw$education = as.numeric(raw$education)
+
+#Extension using FOB
+#raw$edu60 <- raw$almenutd_60
+#raw$edu70 <- recode(as.numeric(raw$hoey_utd_70_n), "9=NA")
+#raw$edu80 <- recode(raw$h_utd_80_n, "9=NA")
+#raw$edu90 <- recode(raw$utd_kode_90_n, "9=NA")
+#raw$edu01 <- recode(as.numeric(raw$bhu_nus2000_o_01_n), "9=NA")
+#raw$edu11 <- recode(raw$bu_n, "9=NA")
+#raw$edu <- raw$edu11
+#raw[is.na(raw[,"edu"]),"edu"] <- raw[is.na(raw[,"edu"]),("edu01")]
+#raw[is.na(raw[,"edu"]),"edu"] <- raw[is.na(raw[,"edu"]),("edu90")]
+#raw[is.na(raw[,"edu"]),"edu"] <- raw[is.na(raw[,"edu"]),("edu80")]
+#raw[is.na(raw[,"edu"]),"edu"] <- raw[is.na(raw[,"edu"]),("edu70")]
+
+### 9. OUTCOME  ====
+#9-1 MORTALITY
+raw$date_DOD <- as.Date( (raw$DODSTIDSPUNKT-13151721600)/86400 , origin = "1999-07-19")
+raw$CAUSE_DOD <- raw$EU_SHORTLIST_2012_K_num
+raw$DOD <- recode(as.numeric(raw$CAUSE_DOD), "1:87=1; else=0") 
+raw$CVD_DOD <- recode(as.numeric(raw$avledet_CVD), "1=1; else=0")
+raw$IHD_DOD <- recode(as.numeric(raw$avledet_CVD_CHD), "1=1; else=0")
+raw$SLAG_DOD <- recode(as.numeric(raw$avledet_CVD_Cerbov), "1=1; else=0")
+#raw$otherCVD_DOD <- recode(raw$EU65_m_eur35, "1=1; else=0")
+#raw$CIRC_DOD <- recode(as.numeric(raw$eur_ny),"33=1; else=0")  
+
+#9-2. FS(HOSPITALIZATION)   ====
+raw$AMI <- recode(as.numeric(raw$DIAGNOSE_AMI), "0:11111111=1; else=0") 
+raw$TOTS <- recode(as.numeric(raw$DIAGNOSE_TOTS), "0:11111111=1; else=0")
+raw$date_AMI = as.Date( (raw$Indato_AMI-13151721600)/86400 , origin = "1999-07-19")
+raw$date_TOTS = as.Date( (raw$Indato_TOTS-13151721600)/86400 , origin = "1999-07-19")
+
+
+### 10. ALCOHOL  ====
+#10-1. FUNCTIONS
+max.pro <- function(drikke3){
+  if(sum(is.na(drikke3)) == 3) return(NA)
+  if(sum(is.na(drikke3)) < 3) return(max(drikke3, na.rm = rm))
+}
+sum.pro <- function(drikke3){
+  if(sum(is.na(drikke3)) == 3) return(NA)
+  if(sum(is.na(drikke3)) < 3) return(sum(drikke3, na.rm = rm))
+}
+
+#0 = NEVER LAST YEAR, 1=FEW TIMES, 2=1-3 TIMES PER MONTH, 3= ONCE OR MORE TIMES A WEEK                                                              
+raw$bingeCON <- recode(raw$ALCOHOL_GLASSES_24H_CO, "0=0; 1:9=1; 10:36=2; 37:99=3") ;table(raw$bingeCON)     # ABSTAINERS WAS NOT TO REPLY ON BINGE, BUT THEY DID
+raw$bingeCON[as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==8] <- NA     ; table(raw$bingeCON) # REMOVE THEM
+
+#10-2. alcohol
+# FREQUENCY
+#ALCOHOL_TIMES_CO is the amount each month, 0 if less than once a month, and TEETOTALLING_CO is for TROMSØ4, HUNT, HUSK (us=1:3)
+#"BEER_GLASSES_CO","WINE_GLASSES_CO","SPIRITS_GLASSES_CO" is the number of glasses on average during 2 weeks for the same studies.
+# ALCOHOL_CONSUMPTION_CO = 8 level reversed variable for the remaining studies, consumption past year (us 4-11)  
+#10-2-1. CONOR         
+raw$select = recode(as.numeric(raw$TEETOTALLER_CO), "1=0; 2=1; else=99") ;table(raw$select)
+raw$freqCON1 <- recode(raw$ALCOHOL_TIMES_CO, "0=1; 1:3=2; 4:6=3; 7:15=4; 16:99=5; else=99") ; table(raw$freqCON1)
+raw$freqCON1 <- ifelse(raw$select==1 & raw$freqCON1==99, yes=0, no=raw$freqCON1); table(raw$freqCON1)
+raw$freqCON1 <- ifelse(raw$select==1 & raw$freqCON1==1, yes=0, no=raw$freqCON1); table(raw$freqCON1)
+raw$freqCON2 <- recode(as.numeric(raw$ALCOHOL_CONSUMPTION_CO), "1=50; 2=40; 3=30; 4:5=20; 6:7=10; 8=0; else=99")
+raw$freqCON <- raw$freqCON1 + raw$freqCON2
+raw$freqCON <- recode(raw$freqCON, "99=0; c(100,109)=1; c(101,119)=2; c(102,129)=3; c(103,139)=4; c(104,149)=5; 198=NA")
+##10-2-1-1. CONTINUOUS TIMES PER MONTH
+raw$timesmonthCON <- ifelse(raw$ALCOHOL_TIMES_CO<=31, raw$ALCOHOL_TIMES_CO, NA)
+#10-2-1-2. SUM OF GLASSES PER 2 WEEK
+raw$sumglassCON <- apply(X = raw[, c("BEER_GLASSES_CO","WINE_GLASSES_CO","SPIRITS_GLASSES_CO")], MARGIN = 1, FUN = sum.pro)
+
+raw$beerCON <- raw$BEER_GLASSES_CO
+raw$wineCON <- raw$WINE_GLASSES_CO
+raw$spritCON <- raw$SPIRITS_GLASSES_CO
+
+raw$average = raw$ALCOHOL_GLASSES_L_YEAR_CO
+raw$average[raw$average>20]=20
+
+raw$amountCON1 = ((raw$timesmonthCON * raw$average)/30)*12.8
+raw$amountCON1[raw$amountCON1>100]=100
+
+raw$select1 = raw$beerCON*11.8
+raw$select2 = raw$wineCON*14
+raw$select3 = raw$spritCON*12.6
+
+raw$amountCON2 <- apply(X = raw[, c("select1","select2","select3")], MARGIN = 1, FUN = sum.pro)
+raw$amountCON2 = raw$amountCON2/14
+raw$amountCON2[raw$amountCON2>100]=100
+
+#raw$amountCON4 =  apply(X = raw[, c("amountCON1","amountCON2")], MARGIN = 1, FUN = max.pro)
+#raw$amountCON4[raw$amountCON4==-Inf] = NA
+#4 times per week =52*4= 208 days, 2-3 times = 130, 1=52, 2-3 month = 
+
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==1, ((raw$average*286)/365)*12.8, NA )
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==2, ((raw$average*130)/365)*12.8, raw$amountCON3)
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==3, ((raw$average*52 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==4, ((raw$average*30 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==5, ((raw$average*12 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==6, ((raw$average*6  )/365)*12.8, raw$amountCON3) 
+raw$amountCON3[raw$amountCON3>100]=100
+
+raw$amountCON = raw$amountCON2
+raw[is.na(raw[,"amountCON"]),"amountCON"] <- raw[is.na(raw[,"amountCON"]),"amountCON3"]
+
+
+#10-2-2. A40P
+#"avholdmk"       = respond yes/no
+# ol/vin/brv_mngd = Glass beer, wine, brandy on average during 2 weeks? Number of days=31 maximum
+#"alkomnd"        = Times per month 0 if less than once a month.
+#10-2-2-1. FREQUENCY AND CURRENT ABSTINENCE
+raw$avhold40 <- recode(as.numeric(raw$avholdmk), "1=1; 2=0; else=99") ; table(raw$avhold40)
+raw$freq40 <- recode(raw$alkomnd, "0=1; 1:3=2; 4:6=3; 7:15=4; 16:99=5; else=NA") ; table(raw$freq40)
+raw$freq40 <- ifelse(raw$avhold40==1 & is.na(raw$freq40), yes=0, no=raw$freq40) ; table(raw$freq40)
+raw$freq40 <- ifelse(raw$avhold40==1 & raw$freq40==1, yes=0, no=raw$freq40) ; table(raw$freq40)
+#10-2-2-2. CONTINUOUS TIMES PER MONTH
+raw$timesmonth40 <- raw$alkomnd
+#10-2-2-3. SUM OF GLASSES PER 2 WEEK
+raw$sumglass40 <- apply(X = raw[, c("ol_mngd", "vin_mngd", "brv_mngd")], MARGIN = 1, FUN = sum.pro)
+#10-2-2-4.Beverages
+raw$beer40 <- raw$ol_mngd
+raw$beer40[raw$beer40>50] = 50
+raw$wine40 <- raw$vin_mngd
+raw$wine40[raw$wine40>50] = 50
+raw$sprit40 <- raw$brv_mngd
+raw$sprit40[raw$sprit40>50] = 50
+#10-2-2-5. Binge
+raw$binge40 = as.numeric(rep(NA, dim(raw)[1]))
+
+#10-2-2-6. Amount
+raw$select1 = raw$beer40*11.8
+raw$select2 = raw$wine40*14
+raw$select3 = raw$sprit40*12.6
+
+raw$amount40 <- apply(X = raw[, c("select1","select2","select3")], MARGIN = 1, FUN = sum.pro)
+raw$amount40 = raw$amount40/14
+raw$amount40[raw$amount40>100]=100
+
+#10-3. COMBINED BETWEEN CONOR AND AGE40
+raw$freqALL <- (raw[,"freqCON"])
+raw[is.na(raw[,"freqALL"]),"freqALL"] <- raw[is.na(raw[,"freqALL"]),"freq40"]
+
+
+//////////////////////by here
+
+
+############Selection ====
+# OVERLAP                
+# sum(table(raw$survey40)) ; sum(table(raw$surveyCON)) 
+# sum(table(raw$survey40)) + sum(table(raw$surveyCON))  - nrow(raw)
+sub = subset(raw, is.na(freqALL))
+#1) Create study identifier
+raw$freqid <- ifelse(raw$freqCON>=0, yes="Conor", no=NA)
+raw$freqid <- ifelse(raw$freq40>=0 & is.na(raw$freqid), yes="A40P", no=raw$freqid)
+
+
+#2) Chop it up in subsets and limit subsets to variables
+CONOR <- subset(raw, freqid == "Conor", select=c(
+  lopenr_16, bingeCON, freqCON, freqid, beerCON, wineCON, spritCON, amountCON, ageCON, sex, surveyCON, studyCON, fdate, usdateCON, msCON, bmiCON, sysCON, diaCON, pulseCON,
+  histamiCON, histangCON, histslagCON, familyCON, diabetesCON, htCON, statCON, colCON, triCON, hdlCON, fysCON, 
+  smokeCON, smoke_statusCON, smoke_amountCON, smoke_neverCON, smoke_formerCON, smoke_yearsCON, pack_yearsCON,
+    edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD, DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+  mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+  nervCON, anxCON, calmCON, irrCON, happyCON, deprCON, lonelyCON, psychCON, fibroCON, tranqCON, antidepCON))
+
+A40P <- subset(raw, freqid == "A40P", select=c(
+  lopenr_16, binge40, freq40, freqid, beer40, wine40, sprit40, amount40, age40, sex, survey40, study40, fdate, usdate40, ms40, bmi40, sys40, dia40, pulse40,
+  histami40, histang40, histslag40, family40, diabetes40, ht40, stat40, col40, tri40, hdl40, fys40, 
+  smoke40, smoke_status40, smoke_amount40, smoke_never40, smoke_former40, smoke_years40, pack_years40,
+  edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD,DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+  mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+  nerv40, anx40, calm40, irr40, happy40, depr40, lonely40, psych40, fibro40, tranq40, antidep40)) 
+
+#3) Rename variables for merging
+mylist <- c("lopenr_16", "binge", "freqALL","freqid", "beer", "wine", "sprit", "amount",  "age", "sex", "survey", "study", "fdate", "usdate", "ms", "bmi", "sys", "dia", "pulse",
+            "histami", "histang", "histslag", "family", "diabetes", "ht", "stat", "col", "tri", "hdl", "fys", 
+            "smoke", "smoke_status", "smoke_amount", "smoke_never", "smoke_former", "smoke_years", "pack_years", 
+            "edu", "education", "tilland", "tilland_dato", "regstatus", "invkat", "forstdato", "date_DOD", "DIAGNOSE_AMI", "DIAGNOSE_TOTS", "AMI", "TOTS", "date_AMI", "date_TOTS", "CAUSE_DOD","DOD", "CVD_DOD", "IHD_DOD", "SLAG_DOD",
+            "mulig_tidligere_AMI_I252", "mulig_tidligere_AMI_for_index_hendelse_I252", "mulig_tidligere_TOTS_I69", "mulig_tidligere_TOTS_for_index_hendelse_I69",
+            "nerv", "anx", "calm", "irr", "happy", "depr", "lonely", "psych", "fibro", "tranq", "antidep")
+
+names(CONOR) <- mylist
+names(A40P) <- mylist
+
+#4) Paste subsets using RBIND (APPEND)
+d1 <- rbind(CONOR, A40P)  ;nrow(d1)
+
+
+# BE ADVICED: 7017 individuals with overlapping data in TROMSø NEEDS TO BE MANUALLY EXCLUDED AS THEY ARE EXCUDED PREVIOUSLY.
+sum(table(raw$survey40)) ; sum(table(raw$surveyCON)) 
+TOTAL = sum(table(raw$survey40)) + sum(table(raw$surveyCON)) ; TOTAL
+ALCO =  sum(table(raw$freqCON)) + sum(table(raw$freq40)) ; ALCO 
+MISSING = TOTAL - ALCO ; MISSING     # MISSING DATA ON ALCOHOL EXPOSURE
+FINAL = nrow(d1) ; FINAL
+OVERLAP = ALCO - FINAL ; OVERLAP # NUMBER OF OVERLAPING PARTICIPATIONS
+
+### EXCLUDE ABSTAINERS====
+#nrow(d1); d1 = subset(d1, freqALL>=1); nrow(d1)
+
+###MENTAL DISTRESS====
+#ACCORDING TO THE PROCEDURE SUGGESTED BY SØGAARD in 2003 and Bramnes in 2010. 
+
+# REVERSE CALM AND HAPPY AND REPLACE NA's WITH 100
+d1$calm <- recode(d1$calm, "1=4; 2=3; 3=2; 4=1"); table(d1$calm)
+d1$calm1 = d1$calm  ;   d1$calm1[is.na(d1$calm1)] <- 100    ; table(d1$calm1)
+d1$happy <- recode(d1$happy, "1=4; 2=3; 3=2; 4=1") ; table(d1$happy)
+d1$happy1 = d1$happy;  d1$happy1[is.na(d1$happy1)] <- 100  ; table(d1$happy1)
+d1$nerv1 = d1$nerv  ; d1$nerv1[is.na(d1$nerv1)] <- 100 ; table(d1$nerv1)
+d1$anx1 = d1$anx;d1$anx1[is.na(d1$anx1)] <- 100    ; table(d1$anx1)
+d1$irr1 = d1$irr;d1$irr1[is.na(d1$irr1)] <- 100    ; table(d1$irr1)
+d1$depr1 = d1$depr;d1$depr1[is.na(d1$depr1)] <- 100 ; table(d1$depr1)
+d1$lonely1 = d1$lonely;d1$lonely1[is.na(d1$lonely1)] <- 100  ; table(d1$lonely1)
+#Sum
+d1$sum <- d1$calm1 + d1$happy1 + d1$nerv1 + d1$anx1 + d1$irr1 + d1$depr1 + d1$lonely1 ; table(d1$sum)
+
+#Exlcude those with =>2 missing reports
+d1$select = ifelse(d1$sum>=200, 1,0) ; prop.table(table(d1$select, d1$study),2)
+subMENT = subset(d1, sum>=200)
+nrow(d1); d1 <- subset(d1, sum<=200) ; nrow(d1)
+
+#REPLACE WITH MEAN FROM VARIABLE REVERSED BUT WITHOUT 100 AND SPECIFIY NA.RM
+d1$calm2 <- ifelse(d1$calm1==100, yes=mean(d1$calm, na.rm=TRUE), no=d1$calm1) ; table(d1$calm2)
+d1$happy2 <- ifelse(d1$happy1==100, yes=mean(d1$happy, na.rm=TRUE), no=d1$happy1)  ; table(d1$happy2)
+d1$nerv2 <- ifelse(d1$nerv1==100, yes=mean(d1$nerv, na.rm=TRUE), no=d1$nerv1)  ; table(d1$nerv2)
+d1$anx2 <- ifelse(d1$anx1==100, yes=mean(d1$anx, na.rm=TRUE), no=d1$anx1)  ; table(d1$anx2)
+d1$irr2 <- ifelse(d1$irr1==100, yes=mean(d1$irr, na.rm=TRUE), no=d1$irr1)  ; table(d1$irr2)
+d1$depr2 <- ifelse(d1$depr1==100, yes=mean(d1$depr, na.rm=TRUE), no=d1$depr1)  ; table(d1$depr2)
+d1$lonely2 <- ifelse(d1$lonely1==100, yes=mean(d1$lonely, na.rm=TRUE), no=d1$lonely1)  ; table(d1$lonely2)
+# CREATE TOTAL SCORE, AVERAGE SCORE, AND CUT-OFF FOR MENTAL DISTRESS
+d1$totalscore <- with(d1, calm2+happy2+nerv2+anx2+irr2+depr2+lonely2) ;summary(d1$totalscore) ; describe(d1$totalscore)
+d1$meanscore <- d1$totalscore/7 ; describe(d1$meanscore)
+d1$mentaldistress <- ifelse(d1$meanscore>=2.15, 1,0) ; table(d1$mentaldistress)
+### CLEAN====
+
+
+d1$amount[d1$freqALL==0] = NA
+subAMOUNT = subset(d1, is.na(amount) & d1$freqALL>=1)
+nrow(d1); d1 = subset(d1, amount>=0 | d1$freqALL==0) ; nrow(d1)
+
+# MISSING SURVEY DATE      
+     nrow(d1) ; table(is.na(d1$usdate), d1$survey); d1 = d1[!is.na(d1$usdate),] 
+# EMIGRATION
+      #1=bosatt(bulk),3=emi(third most), 5=dead (minority), else=small numbers
+      d1$regstatus = as.numeric(as.character(d1$regstatus)) ; table(d1$regstatus) #Current emigration status
+      
+      # REMOVE SOMEONE WHO VANISHED
+      d1$regstatus[d1$regstatus>6] <- NA
+      summary(d1$regstatus); d1 <- d1[!is.na(d1$regstatus),] 
+      
+      d1$emi <- ifelse(d1$regstatus==3, yes=as.character(d1$tilland_dato), no=NA) ; #date of emigration
+      d1$emi <- as.Date(d1[["emi"]], "%Y%m%d")
+      d1$dager_emi <- as.numeric(difftime(d1$emi, d1$usdate , units = c("days")))
+      # EMIGRATED BEFORE SURVEY
+      describe(d1$dager_emi[d1$dager_emi<0]) 
+      d1$emibeforestudy = recode(d1$dager_emi, "-10000:-1=NA; else=1") 
+      summary(d1$emibeforestudy); d1 = d1[!is.na(d1$emibeforestudy),] 
+        
+      d1$everemi = as.numeric(as.character(d1$tilland_dato)) ; sum(table(d1$everemi[d1$everemi>0])) #Ever emigrated  
+      sum(table(as.numeric(as.character(d1$forstdato[d1$everemi>0]))))  #Imigrated & emigrated or reverse
+      
+# GHOSTS (died before survey)  
+      nrow(d1);  d1$dager_dod = as.numeric(difftime(d1$date_DOD, d1$usdate , units = c("days"))) 
+      head(sort(d1$dager_dod), n=20); d1$GHOST = recode(d1$dager_dod, "-10000:-1=NA; else=1") ; table(d1$survey[is.na(d1$GHOST)])
+      summary(d1$GHOST); d1 = d1[!is.na(d1$GHOST),] # Exlude those who died before the survey
+          d1$select <- ifelse(d1$DOD==0 & d1$dager_dod>=0, yes=10, no=1)  ; table(d1$select)              
+          d1$select <- ifelse(d1$DOD==1 & is.na(d1$dager_dod), yes=10, no=d1$select) ; table(d1$select)    
+          d1$select <- recode(d1$select, "1=0; 10=NA; NA=0") ; summary(d1$select)     
+          d1$GHOST2 = d1$select 
+          summary(d1$GHOST2); d1 <- d1[!is.na(d1$GHOST2),] 
+          
+
+# RECODE
+      d1$yearbirth <- as.numeric(format(d1$fdate,'%Y'))
+      d1$freqALL[d1$binge>=2 & d1$freqALL<=1] = 2
+      d1$freqFREE <- ifelse(d1$freqALL==0, NA, d1$freqALL) ; table(d1$freqFREE) # ONLY DRINKERS
+      d1$abstainer <- recode(d1$freqALL, "0=1; 1=0; else=NA") ; table(d1$abstainer)
+      d1$freqCUT <- recode(d1$freqFREE, "1=0; 2:5=1") ; table(d1$freqCUT) ; #Infrequent vs frequent drinkers
+      d1$bingeCUT <- recode(d1$binge, "0=0; 1:4=1")
+      d1$freqNEW = recode(d1$freqFREE, "1=0; 2:3=1; 4=2; 5=3") ;table(d1$freqNEW) # COMBINE LESS FREQUENT DRINKING CATEGORIES
+      
+# History of CVD  (combine self-report with FS-data)     
+      d1$histang = recode(d1$histang, "NA=100") ; table(d1$histang)
+      
+      d1$dager_ami = as.numeric(difftime(d1$date_AMI, d1$usdate , units = c("days")))
+      d1$histAMI = recode(d1$dager_ami, "-10000:-1=1; else=0"); table(d1$histAMI) 
+      d1$histami = ifelse(d1$histAMI==1, 1, d1$histami)
+      d1$histami = recode(d1$histami, "NA=100") ; table(d1$histami)
+      
+      d1$dager_tots <- as.numeric(difftime(d1$date_TOTS, d1$usdate , units = c("days")))
+      d1$histTOTS = recode(d1$dager_tots, "-10000:-1=1; else=0"); table(d1$histTOTS) #stroke before survey  
+      d1$histslag = ifelse(d1$histTOTS==1, 1, d1$histslag)
+      d1$histslag = recode(d1$histslag, "NA=100") ; table(d1$histslag)
+  
+      d1$histCVD = d1$histami + d1$histslag + d1$histang
+      d1$histCVD = recode(d1$histCVD, "100=NA; 200=NA; 300=NA; 101=1; 201=1; 102=2; 202=2") ; table(d1$histCVD)
+      d1$histCVD2 = recode(d1$histCVD, "2:3=1") ; table(d1$histCVD2)
+      
+      d1$histang[d1$histang==100] = NA
+      d1$histami[d1$histami==100] = NA
+      d1$histslag[d1$histslag==100] = NA
+      
+      d1$select = is.na(d1$bmi) | is.na(d1$sys) | is.na(d1$smoke_status) | is.na(d1$diabetes) | is.na(d1$histCVD) |
+      is.na(d1$family) | is.na(d1$fys) | is.na(d1$pulse) | is.na(d1$tri) | is.na(d1$ms) | is.na(d1$edu) | is.na(d1$tri) | is.na(d1$col)
+      subCOV = subset(d1, select=="TRUE")
+      
+# EXCLUTION    
+      
+      summary(d1$edu); d1 <- d1[!is.na(d1$edu),] 
+      summary(d1$bmi); d1 <- d1[!is.na(d1$bmi),]                                                  
+      summary(d1$sys); d1 <- d1[!is.na(d1$sys),]                                                  
+      summary(d1$smoke); d1 <- d1[!is.na(d1$smoke),]                                                 
+      summary(d1$diabetes); d1 <- d1[!is.na(d1$diabetes),]                                             
+      summary(d1$histCVD); d1 <- d1[!is.na(d1$histCVD),]                                              
+      summary(d1$family); d1 <- d1[!is.na(d1$family),]                                                
+      summary(d1$fys); d1 <- d1[!is.na(d1$fys),]                                                  
+      summary(d1$pulse); d1 <- d1[!is.na(d1$pulse),]                                                
+      summary(d1$tri); d1 <- d1[!is.na(d1$tri),] 
+      summary(d1$ms); d1 <- d1[!is.na(d1$ms),]  
+
+    
+      
+### OUTCOME==== 
+      
+      d1$date_censored1 <- as.Date(paste(2014,12,31, sep="-"), format = "%Y-%m-%d") 
+      d1$date_censored2 = as.Date(paste(2009,12,31, sep="-"), format = "%Y-%m-%d")
+      
+      d1$dager_censored1 <- as.numeric(difftime(d1$date_censored1, d1$usdate , units = c("days")))
+      d1$dager_censored2 <- as.numeric(difftime(d1$date_censored2, d1$usdate , units = c("days"))) 
+      
+ # MORTALITY ONLY 
+      d1$date_out = d1$date_DOD
+      d1[is.na(d1[,"date_out"]),"date_out"] <- d1[is.na(d1[,"date_out"]),"emi"]  ; hist(d1$date_out, breaks=100) ; sum(table(d1$date_out))
+      d1[is.na(d1[,"date_out"]),"date_out"] <- d1[is.na(d1[,"date_out"]),"date_censored1"] ; hist(d1$date_out, breaks=100) ; sum(table(d1$date_out))
+      d1$dager_out <- as.numeric(difftime(d1$date_out, d1$usdate , units = c("days")))   
+      
+ # MORBIDITY & MORTALITY
+      d1$emi2 = d1$emi
+      d1$emi2[d1$emi2>="2010-01-01"] = NA
+      
+      d1$date_AMI2 = d1$date_AMI
+      d1$date_AMI2[d1$date_AMI2>="2010-01-01"] = NA
+      d1$date_AMI2[d1$date_AMI2<="1994-01-01"] = NA
+      
+      d1$date_TOTS2 = d1$date_TOTS
+      d1$date_TOTS2[d1$date_TOTS2>="2010-01-01"] = NA
+      d1$date_TOTS2[d1$date_TOTS2<="1994-01-01"] = NA
+      
+      d1$date_DOD2 = d1$date_DOD
+      d1$date_DOD2[d1$date_DOD2>="2010-01-01"] = NA
+      
+      d1$IHD_DOD2 = d1$IHD_DOD
+      d1$IHD_DOD2[d1$date_DOD>="2010-01-01"] = 0
+      
+      d1$SLAG_DOD2 = d1$SLAG_DOD
+      d1$SLAG_DOD2[d1$date_DOD>="2010-01-01"] = 0
+      
+      d1$AMI2 = d1$AMI
+      d1$AMI2[d1$date_AMI>="2010-01-01"] = 0
+      d1$AMI2[d1$date_AMI<="1994-01-01"] = 0
+      
+      d1$TOTS2 = d1$TOTS
+      d1$TOTS2[d1$date_TOTS>="2010-01-01"] = 0
+      d1$TOTS2[d1$date_TOTS<="1994-01-01"] = 0
+      
+      d1[is.na(d1[,"date_AMI2"]),"date_AMI2"] <- d1[is.na(d1[,"date_AMI2"]),"emi2"]      ; hist(d1$date_AMI2, breaks=100) ; sum(table(d1$date_AMI2))
+      d1[is.na(d1[,"date_AMI2"]),"date_AMI2"] <- d1[is.na(d1[,"date_AMI2"]),"date_DOD2"] ; hist(d1$date_AMI2, breaks=100) ; sum(table(d1$date_AMI2))
+      d1[is.na(d1[,"date_AMI2"]),"date_AMI2"] <- d1[is.na(d1[,"date_AMI2"]),"date_censored2"]  ; hist(d1$date_AMI2, breaks=100) ; sum(table(d1$date_AMI2))
+      d1$dager_ami <- as.numeric(difftime(d1$date_AMI2, d1$usdate , units = c("days"))) 
+      
+      d1[is.na(d1[,"date_TOTS2"]),"date_TOTS2"] <- d1[is.na(d1[,"date_TOTS2"]),"emi2"]      ; hist(d1$date_TOTS2, breaks=100) ; sum(table(d1$date_TOTS2))
+      d1[is.na(d1[,"date_TOTS2"]),"date_TOTS2"] <- d1[is.na(d1[,"date_TOTS2"]),"date_DOD2"] ; hist(d1$date_TOTS2, breaks=100) ; sum(table(d1$date_TOTS2))
+      d1[is.na(d1[,"date_TOTS2"]),"date_TOTS2"] <- d1[is.na(d1[,"date_TOTS2"]),"date_censored2"]  ; hist(d1$date_TOTS2, breaks=100) ; sum(table(d1$date_TOTS2))
+      d1$dager_tots <- as.numeric(difftime(d1$date_TOTS2, d1$usdate , units = c("days"))) 
+      
+      table(d1$AMI2); d1$OUT_AMI = ifelse(d1$IHD_DOD2==1, 1, d1$AMI2); table(d1$OUT_AMI)
+      table(d1$TOTS2); d1$OUT_TOTS = ifelse(d1$SLAG_DOD2==1, 1, d1$TOTS2) ; table(d1$OUT_TOTS)
+      
+# NON_FATAL INCIDENT EVENTS    
+      d1$date_AMI3 = d1$date_AMI
+      d1$date_AMI3[d1$date_AMI3>="2010-01-01"] = NA
+      d1$date_AMI3[d1$date_AMI3<="1994-01-01"] = NA
+      
+      d1$AMI3 = d1$AMI
+      d1$AMI3[d1$date_AMI3>="2010-01-01"] = 0
+      d1$AMI3[d1$date_AMI3<="1994-01-01"] = 0
+      
+      # DEATHS ARE REMOVED
+      table(d1$AMI3) ; d1$AMI3[d1$IHD_DOD==1] = 0 ; table(d1$AMI3)
+      sum(table(d1$date_AMI3)) ; d1$date_AMI3[d1$IHD_DOD==1] = NA ; sum(table(d1$date_AMI3))
+      
+      d1[is.na(d1[,"date_AMI3"]),"date_AMI3"] <- d1[is.na(d1[,"date_AMI3"]),"emi2"]      ; hist(d1$date_AMI3, breaks=100) ; sum(table(d1$date_AMI3))
+      d1[is.na(d1[,"date_AMI3"]),"date_AMI3"] <- d1[is.na(d1[,"date_AMI3"]),"date_DOD2"] ; hist(d1$date_AMI3, breaks=100) ; sum(table(d1$date_AMI3))
+      d1[is.na(d1[,"date_AMI3"]),"date_AMI3"] <- d1[is.na(d1[,"date_AMI3"]),"date_censored2"]  ; hist(d1$date_AMI3, breaks=100) ; sum(table(d1$date_AMI3))
+      d1$dager_ami3 <- as.numeric(difftime(d1$date_AMI3, d1$usdate , units = c("days"))) ; hist(d1$dager_ami3, breaks=100)
+      
+      d1$date_TOTS3 = d1$date_TOTS
+      d1$date_TOTS3[d1$date_TOTS3>="2010-01-01"] = NA
+      d1$date_TOTS3[d1$date_TOTS3<="1994-01-01"] = NA
+      
+      d1$TOTS3 = d1$TOTS
+      d1$TOTS3[d1$date_TOTS3>="2010-01-01"] = 0
+      d1$TOTS3[d1$date_TOTS3<="1994-01-01"] = 0
+      
+      # DEATHS ARE REMOVED
+      table(d1$TOTS3) ; d1$TOTS3[d1$SLAG_DOD==1] = 0 ; table(d1$TOTS3)
+      sum(table(d1$date_TOTS3)) ; d1$date_TOTS3[d1$SLAG_DOD==1] = NA ; sum(table(d1$date_TOTS3))
+      
+      d1[is.na(d1[,"date_TOTS3"]),"date_TOTS3"] <- d1[is.na(d1[,"date_TOTS3"]),"emi2"]      ; hist(d1$date_TOTS3, breaks=100) ; sum(table(d1$date_TOTS3))
+      d1[is.na(d1[,"date_TOTS3"]),"date_TOTS3"] <- d1[is.na(d1[,"date_TOTS3"]),"date_DOD2"] ; hist(d1$date_TOTS3, breaks=100) ; sum(table(d1$date_TOTS3))
+      d1[is.na(d1[,"date_TOTS3"]),"date_TOTS3"] <- d1[is.na(d1[,"date_TOTS3"]),"date_censored2"]  ; hist(d1$date_TOTS3, breaks=100) ; sum(table(d1$date_TOTS3))
+      d1$dager_tots3 <- as.numeric(difftime(d1$date_TOTS3, d1$usdate , units = c("days"))) ; hist(d1$dager_tots3, breaks=100)
+      
+### SAVE====
+      save(d1, file="d1_mental2_PLOS_MED.RData") #save file as r format
+      
+
+   
+   
+   
+
+### REVISION SEPTEMBER 2019====
+# SELECT EXCLUDED GROUPS ====
+      
+
+      raw$missCON = ifelse(is.na(raw$freqCON) & raw$surveyCON>=0  & is.na(raw$freq40) , 1, 0) 
+      raw$miss40 = ifelse(is.na(raw$freq40) & as.character(raw$survey40)>=0    & is.na(raw$freqCON), 1, 0) 
+     
+      #1) Create study identifier
+      raw$missid <- ifelse(raw$missCON==1 , yes="Conor", no=NA)
+      raw$missid <- ifelse(raw$miss40==1 & is.na(raw$missid), yes="A40P", no=raw$missid)
+
+      #2) Chop it up in subsets and limit subsets to variables
+      CONOR <- subset(raw, missid == "Conor", select=c(
+        lopenr_16, bingeCON, freqCON, freqid, beerCON, wineCON, spritCON, amountCON, ageCON, sex, surveyCON, studyCON, fdate, usdateCON, msCON, bmiCON, sysCON, diaCON, pulseCON,
+        histamiCON, histangCON, histslagCON, familyCON, diabetesCON, htCON, statCON, colCON, triCON, hdlCON, fysCON, 
+        smokeCON, smoke_statusCON, smoke_amountCON, smoke_neverCON, smoke_formerCON, smoke_yearsCON, pack_yearsCON,
+        edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD, DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+        mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+        nervCON, anxCON, calmCON, irrCON, happyCON, deprCON, lonelyCON, psychCON, fibroCON, tranqCON, antidepCON))
+      
+      A40P <- subset(raw, missid == "A40P", select=c(
+        lopenr_16, binge40, freq40, freqid, beer40, wine40, sprit40, amount40, age40, sex, survey40, study40, fdate, usdate40, ms40, bmi40, sys40, dia40, pulse40,
+        histami40, histang40, histslag40, family40, diabetes40, ht40, stat40, col40, tri40, hdl40, fys40, 
+        smoke40, smoke_status40, smoke_amount40, smoke_never40, smoke_former40, smoke_years40, pack_years40,
+        edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD,DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+        mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+        nerv40, anx40, calm40, irr40, happy40, depr40, lonely40, psych40, fibro40, tranq40, antidep40)) 
+      
+      #3) Rename variables for merging
+      mylist <- c("lopenr_16", "binge", "freqALL","freqid", "beer", "wine", "sprit", "amount",  "age", "sex", "survey", "study", "fdate", "usdate", "ms", "bmi", "sys", "dia", "pulse",
+                  "histami", "histang", "histslag", "family", "diabetes", "ht", "stat", "col", "tri", "hdl", "fys", 
+                  "smoke", "smoke_status", "smoke_amount", "smoke_never", "smoke_former", "smoke_years", "pack_years", 
+                  "edu", "education", "tilland", "tilland_dato", "regstatus", "invkat", "forstdato", "date_DOD", "DIAGNOSE_AMI", "DIAGNOSE_TOTS", "AMI", "TOTS", "date_AMI", "date_TOTS", "CAUSE_DOD","DOD", "CVD_DOD", "IHD_DOD", "SLAG_DOD",
+                  "mulig_tidligere_AMI_I252", "mulig_tidligere_AMI_for_index_hendelse_I252", "mulig_tidligere_TOTS_I69", "mulig_tidligere_TOTS_for_index_hendelse_I69",
+                  "nerv", "anx", "calm", "irr", "happy", "depr", "lonely", "psych", "fibro", "tranq", "antidep")
+      
+      names(CONOR) <- mylist
+      names(A40P) <- mylist
+    
+      #4) Paste subsets using RBIND (APPEND)
+      sub <- rbind(CONOR, A40P)    
+      
+      #DAYS                 
+      sub$dager_censored <- as.numeric(difftime(sub$censored, sub$usdate , units = c("days")))
+      sub$dager_out <- sub$dager_dod
+      sub[is.na(sub[,"dager_out"]),"dager_out"] <- sub[is.na(sub[,"dager_out"]),"dager_emi"]
+      sub[is.na(sub[,"dager_out"]),"dager_out"] <- sub[is.na(sub[,"dager_out"]),"dager_censored"] 
+      
+      
+      sub$ang = recode(sub$ang, "NA=100")
+      sub$ami = recode(sub$ami, "NA=100")
+      sub$slag = recode(sub$slag, "NA=100")
+      sub$histCVD = sub$ami + sub$slag + sub$ang
+      sub$histCVD = recode(sub$histCVD, "100=NA; 200=NA; 300=NA; 101=1; 201=1; 102=2; 202=2")
+      sub$histCVD2 = recode(sub$histCVD, "2:3=1") 
+      
+      #sub$survey = recode(sub$survey, "'1'='Age40P94-97'; '2'='Age40P97-99'")
+      
+      #sub$survey = as.character(sub$surveyFIN)
+      #sub[is.na(sub[,"survey"]),"survey"] <- sub[is.na(sub[,"survey"]),"surveyCON"]
+      #sub[is.na(sub[,"survey"]),"survey"] <- sub[is.na(sub[,"survey"]),"survey40"]
+      #sub$survey = recode(sub$survey, "'1'='Age40P94-97'; '2'='Age40P97-99'")
+      
+      #sub$survey = recode(sub$survey, "'1'='Age40P94-97'; '2'='Age40P97-99'")
+      
+      
+      
+# DESCRIBE EXCLUDED GROUPS====       
+      
+      #Study population
+      mean(d1$age);  sd(d1$age)
+      table(d1$sex) ; prop.table(table(d1$sex))
+      mean(d1$education, na.rm=TRUE);  sd(d1$education, na.rm=TRUE)
+      table(d1$DOD) ; prop.table(table(d1$DOD))
+      table(d1$CVD_DOD) ; prop.table(table(d1$CVD_DOD))
+      mean(d1$yearbirth) ; sd(d1$yearbirth)
+      (prop.table(table(d1$study)))*100
+      
+      # Missing data on average alcohol intake (current drinkers only, abstainers excluded)
+      mean(subAMOUNT$age);  sd(subAMOUNT$age)
+      table(subAMOUNT$sex) ; prop.table(table(subAMOUNT$sex))
+      mean(subAMOUNT$education, na.rm=TRUE);  sd(subAMOUNT$education, na.rm=TRUE)
+      table(subAMOUNT$DOD) ; prop.table(table(subAMOUNT$DOD))
+      table(subAMOUNT$CVD_DOD) ; prop.table(table(subAMOUNT$CVD_DOD))
+      subAMOUNT$yearbirth <- as.numeric(format(subAMOUNT$fdate,'%Y'))
+      mean(subAMOUNT$yearbirth) ; sd(subAMOUNT$yearbirth)
+      (prop.table(table(subAMOUNT$study)))*100
+      
+      # Missing data on covariates
+      mean(subCOV$age);  sd(subCOV$age)
+      table(subCOV$sex) ; prop.table(table(subCOV$sex))
+      mean(subCOV$education, na.rm=TRUE);  sd(subCOV$education, na.rm=TRUE)
+      table(subCOV$DOD) ; prop.table(table(subCOV$DOD))
+      table(subCOV$CVD_DOD) ; prop.table(table(subCOV$CVD_DOD))
+      subCOV$yearbirth <- as.numeric(format(subCOV$fdate,'%Y'))
+      mean(subCOV$yearbirth) ; sd(subCOV$yearbirth)
+      (prop.table(table(subCOV$study)))*100
+      
+      # Missing data on mental distress index
+      mean(subMENT$age);  sd(subMENT$age)
+      table(subMENT$sex) ; prop.table(table(subMENT$sex))
+      mean(subMENT$education, na.rm=TRUE);  sd(subMENT$education, na.rm=TRUE)
+      table(subMENT$DOD) ; prop.table(table(subMENT$DOD))
+      table(subMENT$CVD_DOD) ; prop.table(table(subMENT$CVD_DOD))
+      subMENT$yearbirth <- as.numeric(format(subMENT$fdate,'%Y'))
+      mean(subMENT$yearbirth) ; sd(subMENT$yearbirth)
+      (prop.table(table(subMENT$study)))*100
+      
+      # Missing data on drinking status
+      sub$ageX = sub$ageCON
+      sub[is.na(sub[,"ageX"]),"ageX"] <- sub[is.na(sub[,"ageX"]),"age40"]   
+      mean(sub$ageX) ; sd(sub$ageX)
+      table(sub$sex) ; prop.table(table(sub$sex))
+      mean(sub$education, na.rm=TRUE) ; sd(sub$education, na.rm=TRUE)
+      table(sub$DOD) ; prop.table(table(sub$DOD))
+      table(sub$CVD_DOD) ; prop.table(table(sub$CVD_DOD))
+      sub$yearbirth <- as.numeric(format(sub$fdate,'%Y'))
+      mean(sub$yearbirth) ; sd(sub$yearbirth)
+      (table(sub$study40)/6521)*100
+      (table(sub$studyCON)/6521)*100
+      
+      #SOURCE POPULATION WITOUT OVERLAP
+      raw$freqid <- ifelse(raw$surveyCON>=0, yes="Conor", no=NA)
+      raw$freqid <- ifelse(raw$survey40>=0 & is.na(raw$freqid), yes="A40P", no=raw$freqid)
+      
+      
+      #2) Chop it up in subsets and limit subsets to variables
+      CONOR <- subset(raw, freqid == "Conor", select=c(
+        lopenr_16, bingeCON, freqCON, freqid, beerCON, wineCON, spritCON, amountCON, ageCON, sex, surveyCON, studyCON, fdate, usdateCON, msCON, bmiCON, sysCON, diaCON, pulseCON,
+        histamiCON, histangCON, histslagCON, familyCON, diabetesCON, htCON, statCON, colCON, triCON, hdlCON, fysCON, 
+        smokeCON, smoke_statusCON, smoke_amountCON, smoke_neverCON, smoke_formerCON, smoke_yearsCON, pack_yearsCON,
+        edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD, DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+        mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+        nervCON, anxCON, calmCON, irrCON, happyCON, deprCON, lonelyCON, psychCON, fibroCON, tranqCON, antidepCON))
+      
+      A40P <- subset(raw, freqid == "A40P", select=c(
+        lopenr_16, binge40, freq40, freqid, beer40, wine40, sprit40, amount40, age40, sex, survey40, study40, fdate, usdate40, ms40, bmi40, sys40, dia40, pulse40,
+        histami40, histang40, histslag40, family40, diabetes40, ht40, stat40, col40, tri40, hdl40, fys40, 
+        smoke40, smoke_status40, smoke_amount40, smoke_never40, smoke_former40, smoke_years40, pack_years40,
+        edu, education, tilland, tilland_dato, regstatus, invkat, forstdato, date_DOD,DIAGNOSE_AMI, DIAGNOSE_TOTS, AMI, TOTS, date_AMI, date_TOTS, CAUSE_DOD, DOD, CVD_DOD, IHD_DOD, SLAG_DOD,
+        mulig_tidligere_AMI_I252, mulig_tidligere_AMI_for_index_hendelse_I252, mulig_tidligere_TOTS_I69, mulig_tidligere_TOTS_for_index_hendelse_I69,
+        nerv40, anx40, calm40, irr40, happy40, depr40, lonely40, psych40, fibro40, tranq40, antidep40)) 
+      
+      #3) Rename variables for merging
+      mylist <- c("lopenr_16", "binge", "freqALL","freqid", "beer", "wine", "sprit", "amount",  "age", "sex", "survey", "study", "fdate", "usdate", "ms", "bmi", "sys", "dia", "pulse",
+                  "histami", "histang", "histslag", "family", "diabetes", "ht", "stat", "col", "tri", "hdl", "fys", 
+                  "smoke", "smoke_status", "smoke_amount", "smoke_never", "smoke_former", "smoke_years", "pack_years", 
+                  "edu", "education", "tilland", "tilland_dato", "regstatus", "invkat", "forstdato", "date_DOD", "DIAGNOSE_AMI", "DIAGNOSE_TOTS", "AMI", "TOTS", "date_AMI", "date_TOTS", "CAUSE_DOD","DOD", "CVD_DOD", "IHD_DOD", "SLAG_DOD",
+                  "mulig_tidligere_AMI_I252", "mulig_tidligere_AMI_for_index_hendelse_I252", "mulig_tidligere_TOTS_I69", "mulig_tidligere_TOTS_for_index_hendelse_I69",
+                  "nerv", "anx", "calm", "irr", "happy", "depr", "lonely", "psych", "fibro", "tranq", "antidep")
+      
+      names(CONOR) <- mylist
+      names(A40P) <- mylist
+      
+      #4) Paste subsets using RBIND (APPEND)
+      source <- rbind(CONOR, A40P)  ;nrow(d1)
+      
+      mean(source$age);  sd(source$age)
+      table(source$sex) ; prop.table(table(source$sex))
+      mean(source$education, na.rm=TRUE);  sd(source$education, na.rm=TRUE)
+      table(source$DOD) ; prop.table(table(source$DOD))
+      table(source$CVD_DOD) ; prop.table(table(source$CVD_DOD))
+      source$yearbirth <- as.numeric(format(source$fdate,'%Y'))
+      mean(source$yearbirth) ; sd(source$yearbirth)
+      (prop.table(table(source$study)))*100
+      
+      

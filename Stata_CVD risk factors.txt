@@ -581,20 +581,6 @@ replace smk_never = 1 if roykslutp4 ==. & (signaap4 ==2 & rsigarp4==2 & rpipep4=
 */
 
 
-/*
-Røykespm i CONOR:
-Variable         			Obs Unique      Mean   Min    Max  Label
-SMOKE_DAILY_NOW_CO  		171270      2  .3038944     0      1  Smoke daily now							Finnes ikke i alle Q i HU40
-SMOKE_DAILY_OR_EVER_CO  	92217      3  2.482742     1      3  Smoke daily now or ever smoked daily		FINNES IKKE I 3X3
-CIGARETTES_CO  				157744      3  .3214005     0      3  Smoke cigarettes daily
-CIGAR_CO      				139979      3  .0093657     0      3  Smoke cigars/cigarillos daily
-PIPE_CO       				140007      3  .0102923     0      3  Smoke pipe daily
-SMOKE_STOP_TIME_CO   		49122     79  14.44955     0     98  If previously smoker, years since stopping
-CIGARETTES_NUMBER_CO   		96420     87  11.66486     0     99  If present or previously daily smoker, no of cigarettes daily
-SMOKE_START_AGE_CO   		98611     76  18.84826     0     97  Age at start of smoking 					FINNES IKKE I 3x3
-SMOKE_YEARS_CO   			97917     82  22.36101     0     99  No of years smoking
-*/
-
 *HU40: kun roykerp1 for skjema 1, deretter spm om sid cig pipe daglig.
 *definisjon av ikke-røyker i HU40:
 *I p1 blir ikke-røykerne definert ved roykerp1=nei
@@ -1344,32 +1330,6 @@ tab fysakt inakt, mis
 *----------------------------------------------------------------------------
 
 bysort men: spearman mosjon hr h_aktiv l_aktiv if periode==4 
-*						 mosjon
-*menn			h_aktiv	 0.56 
-*				l_aktiv	 0.43
-*				hr		-0.18
-
-*Kvinner		h_aktiv	 0.47 
-*				l_aktiv	 0.43
-*				hr		-0.11
-
-
-/*
-tab mosjon h_aktiv if periode==4, mis
-/*
-         Bevegelse og |
-kroppslig aktivitet i | Hard fysisk aktivitet i fritiden siste året (timer per
-     Deres fritid det |                         uke)?
-          siste året? |     Ingen  Under 1 t  1 - 2 tim  3 timer e          . |     Total
-----------------------+-------------------------------------------------------+----------
-Leser, ser fjernsyn/a |     7,680      3,879      1,348        149        640 |    13,696 
-Spaserer/sykler/beveg |     8,896     11,740     13,150      3,414      1,833 |    39,033 
-Driver mosjonsidrett, |       546      1,119      3,888      4,175        213 |     9,941 
-Trener hardt/driver k |        11         15        205      1,173          9 |     1,413 
-                    . |       541        422        399        133        569 |     2,064 
-----------------------+-------------------------------------------------------+----------
-                Total |    17,674     17,175     18,990      9,044      3,264 |    66,147 
-*/
 
 
 *------------------------
@@ -1394,20 +1354,7 @@ replace aktiv_2h=1 if h_aktiv==1 & l_aktiv==3 & periode==4/*20.7% er inaktive*/
 tab aktiv_2h h_aktiv if periode==4, col 		/*20.7 er inaktive*/
 tab mosjon if periode==4 						/*21.4% Leseer, ser på tv...*/
 tab aktiv_2h mosjon if periode==4, col
-/*
-           |  Bevegelse og kroppslig aktivitet i Deres
-aktiv_2h   |           fritid det siste året?
-           | Leser, se  Spaserer/  Driver mo  Trener ha |     Total
------------+--------------------------------------------+----------
-         0 |     6,344     33,868      9,563      1,404 |    51,179 
-           |     46.55      87.26      96.68      99.57 |     80.29 
------------+--------------------------------------------+----------
-         1 |     7,283      4,943        328          6 |    12,560 
-           |     53.45      12.74       3.32       0.43 |     19.71 
------------+--------------------------------------------+----------
-     Total |    13,627     38,811      9,891      1,410 |    63,739 
-           |    100.00     100.00     100.00     100.00 |    100.00 
-*/
+
 
 *g aktiv_2h=. if SURVEY_mosjon_og_akt_CO==1
 replace aktiv_2h=0 if PHYS_ACT_LEISURE_LIGHT_CO==1 & SURVEY_mosjon_og_akt_CO==1
@@ -1426,44 +1373,16 @@ replace aktiv_2h=1 if PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==3
 tab aktiv_2h PHYS_ACT_LEISURE_HARD_CO if SURVEY_mosjon_og_akt_CO==1, col /*22.3% er inaktive*/
 tab PHYS_ACT_LEISURE_CO if SURVEY_mosjon_og_akt_CO==1  /*26.0% Leser, ser på tv...*/
 tab aktiv_2h PHYS_ACT_LEISURE_CO if SURVEY_mosjon_og_akt_CO==1, col
-/*
-           |  Exercise and physical exertion in leisure
-           |   time. If your activity varies much, fo
-  aktiv_2h | Reading,   Walking,   Light spo  Hard exer |     Total
------------+--------------------------------------------+----------
-         0 |     1,316      5,401      1,439        322 |     8,478 
-           |     47.56      88.51      95.81      99.08 |     79.26 
------------+--------------------------------------------+----------
-         1 |     1,451        701         63          3 |     2,218 
-           |     52.44      11.49       4.19       0.92 |     20.74 
------------+--------------------------------------------+----------
-     Total |     2,767      6,102      1,502        325 |    10,696 
-           |    100.00     100.00     100.00     100.00 |    100.00 
-*/
+
 
 *------------------------
 *korrelasjon med HR
 *------------------------
 
 bysort men: spearman hr mosjon h_aktiv l_aktiv if periode==4 
-*for menn: 	hr mosjon  r=	-0.18
-*			hr h_aktiv r=	-0.19
-*			hr l_aktiv r=	-0.08
 
-*for kvinner:hr mosjon r=	-0.11
-*			hr h_aktiv r=	-0.14
-*			hr l_aktiv r=	-0.06
 
 bysort men: spearman hr PHYS_ACT_LEISURE_CO  PHYS_ACT_LEISURE_HARD_CO  PHYS_ACT_LEISURE_LIGHT_CO  if SURVEY_mosjon_og_akt_CO ==1
-*for menn: 	hr mosjon  r=	-0.22
-*			hr h_aktiv r=	-0.22
-*			hr l_aktiv r=	-0.13
-
-*for kvinner:hr mosjon r=	-0.15
-*			hr h_aktiv r=	-0.15
-*			hr l_aktiv r=	-0.08
-
-	**konklusjon: ser bort fra lett aktivitetsspørsmålet.
 
 
 

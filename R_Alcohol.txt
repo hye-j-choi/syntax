@@ -1,0 +1,104 @@
+ 
+### 10. ALCOHOL  ====
+#10-1. FUNCTIONS
+max.pro <- function(drikke3){
+  if(sum(is.na(drikke3)) == 3) return(NA)
+  if(sum(is.na(drikke3)) < 3) return(max(drikke3, na.rm = rm))
+}
+sum.pro <- function(drikke3){
+  if(sum(is.na(drikke3)) == 3) return(NA)
+  if(sum(is.na(drikke3)) < 3) return(sum(drikke3, na.rm = rm))
+}
+
+#0 = NEVER LAST YEAR, 1=FEW TIMES, 2=1-3 TIMES PER MONTH, 3= ONCE OR MORE TIMES A WEEK                                                              
+raw$bingeCON <- recode(raw$ALCOHOL_GLASSES_24H_CO, "0=0; 1:9=1; 10:36=2; 37:99=3") ;table(raw$bingeCON)     # ABSTAINERS WAS NOT TO REPLY ON BINGE, BUT THEY DID
+raw$bingeCON[as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==8] <- NA     ; table(raw$bingeCON) # REMOVE THEM
+
+#10-2. alcohol
+# FREQUENCY
+#ALCOHOL_TIMES_CO is the amount each month, 0 if less than once a month, and TEETOTALLING_CO is for TROMSØ4, HUNT, HUSK (us=1:3)
+#"BEER_GLASSES_CO","WINE_GLASSES_CO","SPIRITS_GLASSES_CO" is the number of glasses on average during 2 weeks for the same studies.
+# ALCOHOL_CONSUMPTION_CO = 8 level reversed variable for the remaining studies, consumption past year (us 4-11)  
+#10-2-1. CONOR         
+raw$select = recode(as.numeric(raw$TEETOTALLER_CO), "1=0; 2=1; else=99") ;table(raw$select)
+raw$freqCON1 <- recode(raw$ALCOHOL_TIMES_CO, "0=1; 1:3=2; 4:6=3; 7:15=4; 16:99=5; else=99") ; table(raw$freqCON1)
+raw$freqCON1 <- ifelse(raw$select==1 & raw$freqCON1==99, yes=0, no=raw$freqCON1); table(raw$freqCON1)
+raw$freqCON1 <- ifelse(raw$select==1 & raw$freqCON1==1, yes=0, no=raw$freqCON1); table(raw$freqCON1)
+raw$freqCON2 <- recode(as.numeric(raw$ALCOHOL_CONSUMPTION_CO), "1=50; 2=40; 3=30; 4:5=20; 6:7=10; 8=0; else=99")
+raw$freqCON <- raw$freqCON1 + raw$freqCON2
+raw$freqCON <- recode(raw$freqCON, "99=0; c(100,109)=1; c(101,119)=2; c(102,129)=3; c(103,139)=4; c(104,149)=5; 198=NA")
+##10-2-1-1. CONTINUOUS TIMES PER MONTH
+raw$timesmonthCON <- ifelse(raw$ALCOHOL_TIMES_CO<=31, raw$ALCOHOL_TIMES_CO, NA)
+#10-2-1-2. SUM OF GLASSES PER 2 WEEK
+raw$sumglassCON <- apply(X = raw[, c("BEER_GLASSES_CO","WINE_GLASSES_CO","SPIRITS_GLASSES_CO")], MARGIN = 1, FUN = sum.pro)
+
+raw$beerCON <- raw$BEER_GLASSES_CO
+raw$wineCON <- raw$WINE_GLASSES_CO
+raw$spritCON <- raw$SPIRITS_GLASSES_CO
+
+raw$average = raw$ALCOHOL_GLASSES_L_YEAR_CO
+raw$average[raw$average>20]=20
+
+raw$amountCON1 = ((raw$timesmonthCON * raw$average)/30)*12.8
+raw$amountCON1[raw$amountCON1>100]=100
+
+raw$select1 = raw$beerCON*11.8
+raw$select2 = raw$wineCON*14
+raw$select3 = raw$spritCON*12.6
+
+raw$amountCON2 <- apply(X = raw[, c("select1","select2","select3")], MARGIN = 1, FUN = sum.pro)
+raw$amountCON2 = raw$amountCON2/14
+raw$amountCON2[raw$amountCON2>100]=100
+
+#raw$amountCON4 =  apply(X = raw[, c("amountCON1","amountCON2")], MARGIN = 1, FUN = max.pro)
+#raw$amountCON4[raw$amountCON4==-Inf] = NA
+#4 times per week =52*4= 208 days, 2-3 times = 130, 1=52, 2-3 month = 
+
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==1, ((raw$average*286)/365)*12.8, NA )
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==2, ((raw$average*130)/365)*12.8, raw$amountCON3)
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==3, ((raw$average*52 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==4, ((raw$average*30 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==5, ((raw$average*12 )/365)*12.8, raw$amountCON3) 
+raw$amountCON3 = ifelse(as.numeric(raw$ALCOHOL_CONSUMPTION_CO)==6, ((raw$average*6  )/365)*12.8, raw$amountCON3) 
+raw$amountCON3[raw$amountCON3>100]=100
+
+raw$amountCON = raw$amountCON2
+raw[is.na(raw[,"amountCON"]),"amountCON"] <- raw[is.na(raw[,"amountCON"]),"amountCON3"]
+
+
+#10-2-2. A40P
+#"avholdmk"       = respond yes/no
+# ol/vin/brv_mngd = Glass beer, wine, brandy on average during 2 weeks? Number of days=31 maximum
+#"alkomnd"        = Times per month 0 if less than once a month.
+#10-2-2-1. FREQUENCY AND CURRENT ABSTINENCE
+raw$avhold40 <- recode(as.numeric(raw$avholdmk), "1=1; 2=0; else=99") ; table(raw$avhold40)
+raw$freq40 <- recode(raw$alkomnd, "0=1; 1:3=2; 4:6=3; 7:15=4; 16:99=5; else=NA") ; table(raw$freq40)
+raw$freq40 <- ifelse(raw$avhold40==1 & is.na(raw$freq40), yes=0, no=raw$freq40) ; table(raw$freq40)
+raw$freq40 <- ifelse(raw$avhold40==1 & raw$freq40==1, yes=0, no=raw$freq40) ; table(raw$freq40)
+#10-2-2-2. CONTINUOUS TIMES PER MONTH
+raw$timesmonth40 <- raw$alkomnd
+#10-2-2-3. SUM OF GLASSES PER 2 WEEK
+raw$sumglass40 <- apply(X = raw[, c("ol_mngd", "vin_mngd", "brv_mngd")], MARGIN = 1, FUN = sum.pro)
+#10-2-2-4.Beverages
+raw$beer40 <- raw$ol_mngd
+raw$beer40[raw$beer40>50] = 50
+raw$wine40 <- raw$vin_mngd
+raw$wine40[raw$wine40>50] = 50
+raw$sprit40 <- raw$brv_mngd
+raw$sprit40[raw$sprit40>50] = 50
+#10-2-2-5. Binge
+raw$binge40 = as.numeric(rep(NA, dim(raw)[1]))
+
+#10-2-2-6. Amount
+raw$select1 = raw$beer40*11.8
+raw$select2 = raw$wine40*14
+raw$select3 = raw$sprit40*12.6
+
+raw$amount40 <- apply(X = raw[, c("select1","select2","select3")], MARGIN = 1, FUN = sum.pro)
+raw$amount40 = raw$amount40/14
+raw$amount40[raw$amount40>100]=100
+
+#10-3. COMBINED BETWEEN CONOR AND AGE40
+raw$freqALL <- (raw[,"freqCON"])
+raw[is.na(raw[,"freqALL"]),"freqALL"] <- raw[is.na(raw[,"freqALL"]),"freq40"]
+

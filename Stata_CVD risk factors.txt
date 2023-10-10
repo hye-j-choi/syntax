@@ -1,0 +1,1569 @@
+
+
+*##############################################################################################################################################################.
+* *CVD RISK FACTORS fra 3x3 fylker, HU 40 og CONOR
+*#############################################################################################################################################################.
+
+*Harmoniser antall decimaler og benevning av missing 
+*suffikset _d betyr at jeg er lagt inn en eller flere decimaler
+*sjekk for usannsynlige målinger HU40 og CO
+*missing må settes som "." og ikke 0. 
+*NB dobbeltsjekk om 3x3, CONOR, HU 40 er kodet som ja=1 og nei=2, eller 0/1. I CONOR der det en person som er kodet som 3 (endres til missing) eller 0/1. HU40 og 3x3er kodet 1 og 2. 
+
+
+
+
+************************
+*Myocardial infarction * 
+************************
+g mi =.
+*3x3
+replace mi=1 if u1hjinf==1 /*Har de eller har De hatt hjerteinfarkt? 1=ja, 2= nei*/
+replace mi=0 if u1hjinf==2
+replace mi=1 if u2hjinf==1 /*Har de eller har De hatt hjerteinfarkt? 1=ja, 2= nei*/
+replace mi=0 if u2hjinf==2
+replace mi=1 if u3hjinf==1 /*Har de eller har De hatt hjerteinfarkt? 1=ja, 2= nei*/
+replace mi=0 if u3hjinf==2
+*HU40
+replace mi=1 if hjinf==1 //*Har De eller har De hatt hjerteinfarkt? 1=ja, 2=nei*//
+replace mi=0 if hjinf==2
+*CONOR
+replace mi=1 if HEART_ATTACK_CO==1 /* Ever had a heart attack 0=no, 1=yes*/
+replace mi=0 if HEART_ATTACK_CO==0
+label variable mi "Myocardial infarction, have or ever had"
+
+
+*****************************************
+*Family history of myocardial infarction / angina*
+*****************************************
+
+gen f_chd=. /*Har en/flere av foeldre/søsken hatt infarkt/angina i familien? Ja=1, nei=2, vet ikke=3*/
+*3x3 /* missing: u3 5 mis, u2 4 mis*/
+replace f_chd=1 if u1angfam ==1 /*Har en eller flere av foreldre eller søsken hatt hjerteinfarkt eller angina pectoris? 1=ja, 2= nei, 3=vet ikke*/
+replace f_chd=0 if u1angfam ==2
+replace f_chd=0 if u1angfam ==3
+replace f_chd=1 if u2angfam ==1/* Har en eller flere av foreldre eller søsken hatt hjerteinfarkt? Ja=1, nei=2, vet ikke=3 */
+replace f_chd=0 if u2angfam ==2
+replace f_chd=0 if u2angfam ==3
+replace f_chd=1 if u3infang ==1 /*Har en eller flere av foreldre eller søsken hatt hjerteinfarkt? Ja=1, nei=2, vet ikke=3 */
+replace f_chd=0 if u3infang ==2
+replace f_chd=0 if u3infang ==3
+*HU40 /*only 247 missing*/
+replace f_chd=1 if f_hjinf==1
+replace f_chd=0 if f_hjinf==2
+replace f_chd=0 if f_hjinf==3
+*CONOR /*only 177 missing*/
+replace f_chd=1 if HEART_DISEASE_RELATIVES_CO==1 /*Parents or siblings have had heart attack or angina pectoris? 0=no, 1=yes, 99=don't know*/
+replace f_chd=0 if HEART_DISEASE_RELATIVES_CO==0
+replace f_chd=0 if HEART_DISEASE_RELATIVES_CO==99
+label variable f_chd "Family history of myocardial infarction or angina (for 3x3 w2 and w3: only mi)"
+tab f_chd indeks_kilde, mis
+
+
+**********
+*Diabetes*
+**********
+g diab =.
+*3x3
+replace diab=1 if u1diabet==1 /*Har de eller har De hatt sukkersyke? 1=ja, 2= nei*/
+replace diab=0 if u1diabet==2
+replace diab=1 if u2diabet==1 /*Har de eller har De hatt sukkersyke? 1=ja, 2= nei*/
+replace diab=0 if u2diabet==2
+replace diab=1 if u3diabet==1 /*Har de eller har De hatt sukkersyke? 1=ja, 2= nei*/
+replace diab=0 if u3diabet==2
+*HU40
+replace diab=1 if diabetes==1 /* Har De eller har De hatt sukkersyke? ja=1, Nei=2*/
+replace diab=0 if diabetes==2
+tab diab diabetes, mis 
+*CONOR
+replace diab=1 if DIABETES_CO==1 /* Have or ever had diabetes 0=yes, 1=no*/
+replace diab=0 if DIABETES_CO==0
+label variable diab "Diabetes, have or ever had"
+tab diab indeks_kilde, mis
+
+
+**************
+*Hypertension 
+***************
+codebook BP_TREATMENT_CO bltrykk_1 bltrykk_2 u1bhbltr u2bhbltr u3bhbltr /**/
+tab u2bhbltr indeks_kilde, mis
+tab bltrykk_1 skjema, mis /*only Q1 Q2 in HU40*/
+tab bltrykk_2 skjema, mis /*only Q3 Q4 in HU40*/
+tab BP_TREATMENT_CO, nolab
+
+g ht_ctrt=.
+*3x3
+replace ht_ctrt=1 if u1bhbltr==1 /*Har De, eller har De hatt høyt blodtrykk? 1=ja, 2=nei*/
+replace ht_ctrt=0 if u1bhbltr==2 
+replace ht_ctrt=1 if u2bhbltr==1 /*Har De, eller har De hatt høyt blodtrykk? 1=ja, 2=nei*/ 
+replace ht_ctrt=0 if u2bhbltr==2
+replace ht_ctrt=1 if u3bhbltr==1 /* Er De under behandling for høyt blodtrykk? 1=ja, 2=nei*/
+replace ht_ctrt=0 if u3bhbltr==2 
+*HU40
+replace ht_ctrt=1 if bltrykk_1==1  /*Er De under behandling for høyt blodtrykk? ja=1, Nei=2*/
+replace ht_ctrt=0 if bltrykk_1==2 
+replace ht_ctrt=1 if bltrykk_2==1 /*Bruker du medisin mot høyt blodtrykk? Nå=1  Før, men ikke nå=2,  Aldri=3*/
+replace ht_ctrt=0 if bltrykk_2==2
+replace ht_ctrt=0 if bltrykk_2==3
+*CONOR
+replace ht_ctrt =1 if BP_TREATMENT_CO==1 /* Take medications for high blood pressure 1= currently, 2= previous, 3= never*/
+replace ht_ctrt =0 if BP_TREATMENT_CO==2
+replace ht_ctrt =0 if BP_TREATMENT_CO==3
+label variable ht_ctrt "Hypertension current treatment (1st 2nd 3x3: Curr/previous high blood pressure)"
+tab ht_ctrt indeks_kilde, mis
+
+
+*definerer missing lik 0 for nåværende eller tidl beh med antihypertesniva 
+recode ht_ctrt 1=1 0=0 .=0
+
+******************
+*Statiner
+******************
+* periode 3 og 4 i HU 40 og i CONOR us 4, 5, 6, 7, 8, 10 og 11
+
+g kol_ctrt=.
+*HU40
+replace kol_ctrt=1 if kol_senk==1 /* Bruker du kolesterolsenkende medikamenter? 1=ja, 2= nei */
+replace kol_ctrt=0 if kol_senk==2
+*CONOR
+replace kol_ctrt=1 if LIPID_LOWERING_DRUGS_CO== 1 /* Take lipid lowering drugs 1=current 2=previously 3=never*/
+replace kol_ctrt=0 if LIPID_LOWERING_DRUGS_CO== 3
+replace kol_ctrt=0 if LIPID_LOWERING_DRUGS_CO== 2
+label variable kol_ctrt "Statins current treatment (only in HU40-period 3 and 4, and in CONOR survey >=4)"
+*tab kol_ctrt periode, mis 
+*tab kol_ctrt HEALTH_SURVEY_CO, mis
+
+*****************
+*Angina pectoris*
+*****************
+g angina=.
+*3x3
+replace angina=1 if u1angina==1 /*Har de eller har De hatt angina pectoris(hjertekrampe)? 1=ja, 2= nei*/
+replace angina=0 if u1angina==2
+replace angina=1 if u2angina==1 /*Har de eller har De hatt angina pectoris(hjertekrampe)? 1=ja, 2= nei*/
+replace angina=0 if u2angina==2
+replace angina=1 if u3angina==1 /*Har de eller har De hatt angina pectoris(hjertekrampe)? 1=ja, 2= nei*/
+replace angina=0 if u3angina==2
+*HU40
+replace angina=1 if angina_HU40==1 /*Har De eller har De hatt angina pectoris? Ja=1, Nei=2*/
+replace angina=0 if angina_HU40==2
+*CONOR 
+replace angina=1 if ANGINA_CO==1 /*Have or ever had angina pectoris 0=No 1= Yes*/
+replace angina=0 if ANGINA_CO==0
+label variable angina "Angina, have or ever had"
+tab angina indeks_kilde, mis
+
+
+********
+*Stroke*
+********
+gen stroke=. 
+*3x3
+replace stroke=1 if u1hjslag==1 /*Har de eller har De hatt hjerneslag? 1=ja, 2= nei*/
+replace stroke=0 if u1hjslag==2
+replace stroke=1 if u2hjslag==1 /*Har de eller har De hatt hjerneslag? 1=ja, 2= nei*/
+replace stroke=0 if u2hjslag==2
+replace stroke=1 if u3hjslag==1 /*Har de eller har De hatt hjerneslag? 1=ja, 2= nei*/
+replace stroke=0 if u3hjslag==2
+*HU40
+replace stroke=1 if hjslag==1 /*Har De eller har De hatt hjerneslag? Ja=1, Nei=2*/
+replace stroke=0 if hjslag==2
+replace stroke=. if hjslag==0
+*CONOR
+replace stroke=1 if STROKE_CO==1 /* Have, or ever had cerebral stroke/brain haemorrhage 0=No, 1=Yes*/
+replace stroke=0 if STROKE_CO==0
+label variable stroke "Stroke, have or ever had"
+tab stroke indeks_kilde, mis
+
+
+**************************
+*Smoking variables common*
+**************************
+
+*############################################################################
+*SMK-variabelen 
+*############################################################################
+
+*-------------.
+*Daily smoker
+*-------------.
+g smk_daily =.
+*3x3
+replace smk_daily=0 if u1royk==2	/*Røyker du daglig for tiden? 1=ja, 2= nei, "."= mis*/
+replace smk_daily=1 if u1royk==1 	
+replace smk_daily=1 if u1rsigd==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u1sigar==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u1pipe==1 	/*(0 real changes made)*/
+
+/* Ingen endring av variabelen
+replace smk_daily=0 if u1rslutt <. & u1royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aar*/
+replace smk_daily=0 if u1raar <. & u1raar !=0 & u1royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_daily=0 if u1rsigt==1 & u1royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_daily=0 if u1sigtil <. & u1sigtil!=0 & u1royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+replace smk_daily=0 if u1sigfra <. & u1sigfra!=0 & u1royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+replace smk_daily=0 if u1tobakk <. & u1tobakk!=0 & u1royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke? (0 real change made)*/
+*/
+
+replace smk_daily=0 if u2royk==2	/*Røyker du daglig for tiden? 1=ja, 2= nei, "."= mis*/
+replace smk_daily=1 if u2royk==1 	
+replace smk_daily=1 if u2rsigdg==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u2sigar==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u2pipe==1	/*(0 real changes made)*/
+
+/* ingen endring av variabelen
+replace smk_daily=0  if u2rslutt <. & u2royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aar*/
+replace smk_daily=0  if u2raar <. & u2raar !=0 & u2royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_daily=0  if u2rsigt==1 & u2royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_daily=0  if u2sigtil <. & u2sigtil!=0 & u2royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+replace smk_daily=0  if u2sigfra <. & u2sigfra!=0 & u2royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+replace smk_daily=0  if u2tobakk <. & u2tobakk!=0 & u2royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke?(0 real change made)*/
+*/
+
+replace smk_daily=0 if u3royk==2	/*Røyker du daglig for tiden? 1=ja, 2= nei, "."= mis*/
+replace smk_daily=1 if u3royk==1 	
+replace smk_daily=1 if u3rsigdg==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u3sigar==1 	/*(0 real changes made)*/
+replace smk_daily=1 if u3pipe==1 	/*(0 real changes made)*/
+tab smk_daily indeks_kilde, mis 
+
+*ingen endring av variabelen
+*replace smk_daily=0  if u3rslutt <. & u3royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 år*/
+replace smk_daily=0  if u3raar <. & u3raar !=0 & u3royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+*replace smk_daily=0  if u3rsigt==1 & u3royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+*replace smk_daily=0  if u3sigtil <. & u3sigtil!=0 & u3royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+*replace smk_daily=0  if u3sigfra <. & u3sigfra!=0 & u3royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+*replace smk_daily=0  if u3tobakk <. & u3tobakk!=0 & u3royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke?(0 real changes made)*/
+
+
+*HU40 
+/*legger inn null--verdien først, definerer non-daglig røyker som enten/eller svart nei på en av tre alternativer. Det er liten forskjell i lavere antall missing dersom  | enn & for p2 og p3*/
+
+*p1
+replace smk_daily=0 if roykerp1 ==2 	/*Røyker De daglig for tiden? 1=ja, 2=nei*/ /*kun for  første runde av HU 40 skjema 1985-87, dvs skjema "p1" */
+*replace smk_daily=0 if roykslutp1<. 	/*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 år. Denne minsker ikke antallet missing for smk_daily**/
+*replace smk_daily=0 if aarroyktp1<. & aarroyktp1 !=0 /*Hvor mange år tilsammen har De røykt daglig? endrer ingenting*/
+*replace smk_daily=0 if sigtidlp1==1 	/*Har De røykt sigaretter daglig tidligere? 1=Ja, 2= Nei endrer ingenting*/
+*replace smk_daily=0 if sigtilp1<. & sigtilp1!=0 /*Daglig antall sigaretter til (eller kun ett tall oppgitt)endrer ingenting*/
+*replace smk_daily=0 if sigfrap1<. & sigfrap1!=0  /* Daglig antall sigaretter fra endrer ingenting*/
+*replace smk_daily=0 if pktobakkp1<. & pktobakkp1!=0 /*Antall pakker tobakk per uke (2 des) - kun 4 fylker 1985-96 endrer ingenting*/
+*replace smk_daily=0 if signaap1==2 & rsigarp1==2 & rpipep1==2 /*denne kan ikke brukes pga layout i spørreskjemaet, "nei" for signaa impliserer egentlig at man røyker, men røyker noe annett enn sigaretter*/
+replace smk_daily=1 if roykerp1 ==1 	/*Røyker De daglig for tiden? 1=ja, 2=nei*/ /*kun for  første runde av HU 40 skjema 1985-87, dvs skjema "p1" */
+replace smk_daily=1 if signaap1==1 		/*Røyker De sigaretter daglig? 1=Ja, 2=nei*/
+replace smk_daily=1 if rsigarp1==1 		/* Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+replace smk_daily=1 if rpipep1==1 		/* Røyker De pipe daglig? 1=ja, 2=nei*/
+
+*p2
+replace smk_daily=0 if signaap2==2 & rsigarp2==2 & rpipep2==2
+replace smk_daily=0 if roykslutp2==1|roykslutp2==2 /*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? 1= mindre enn 1 år, 2== mer enn 1aar*/
+replace smk_daily=0 if aarroyktp2<. & aarroyktp2 !=0/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_daily=0 if sigtidlp2==1 		/*Har De røykt sigaretter daglig tidligere? 1=Ja, 2= Nei (15 real changes made)*/
+replace smk_daily=0 if sigtilp2<. & sigtilp2!=0 /*Daglig antall sigaretter til (eller kun ett tall oppgitt) (2 real changes made)*/
+replace smk_daily=0 if sigfrap2<. & sigfrap2!=0/* Daglig antall sigaretter fra (0 real changes made)*/
+replace smk_daily=1 if signaap2==1 			/*Røyker De sigaretter daglig? 1=Ja, 2=nei*/
+replace smk_daily=1 if rsigarp2==1 			/*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+replace smk_daily=1 if rpipep2==1 			/*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+
+tab  aarroyktp2 smk_daily if skjema==2, mis
+
+*p3
+replace smk_daily=0 if signaap3==2 & rsigarp3==2 & rpipep3==2
+replace smk_daily=0 if roykslutp3 <. 	/*Dersom du har røykt tidligere, hvor lenge er det siden du sluttet? (år), numerisk antallaar*/
+replace smk_daily=0 if aarroyktp3<. & aarroyktp3 !=0 	/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_daily=0 if roykaldp3<. & roykaldp3!=0 /*Hvor gammel var du da du begynte å røyke? */
+replace smk_daily=0 if sigtilp3<. & sigtilp3!=0 /*Daglig antall sigaretter til (eller kun ett tall oppgitt)*/
+replace smk_daily=0 if sigfrap3<. & sigfrap3!=0 /* Daglig antall sigaretter fra */
+replace smk_daily=1 if signaap3==1 		/*Røyker De sigaretter daglig? 1=Ja, 2=nei*/
+replace smk_daily=1 if rsigarp3==1		 /*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+replace smk_daily=1 if rpipep3==1 		/*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+
+*p4
+replace smk_daily=0 if signaap4==2 & rsigarp4==2 & rpipep4==2
+replace smk_daily=0 if roykslutp4 <. 	/* Dersom du har røykt tidligere, hvor lenge er det siden du sluttet? (år), numerisk*/
+replace smk_daily=0 if aarroyktp4<. & aarroyktp4 !=0 /*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_daily=0 if roykaldp4<. & roykaldp4!=0 /*Hvor gammel var du da du begynte å røyke?*/
+replace smk_daily=0 if sigtilp4<. & sigtilp4!=0 /*Daglig antall sigaretter til (eller kun ett tall oppgitt) (26 real changes made)*/
+replace smk_daily=0 if sigfrap4<. & sigfrap4!=0 /* Daglig antall sigaretter fra*/
+replace smk_daily=0 if ikke_rktp4== 1 	/* Har aldri røykt daglig? 1= besvart*/
+replace smk_daily=1 if signaap4==1 		/* Røyker De sigaretter daglig? 1=Ja, 2=nei*/
+replace smk_daily=1 if rsigarp4==1 		/*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+replace smk_daily=1 if rpipep4==1 		/*  Røyker De daglig sigarer/serutter/sigarellos?eller Røyker du daglig sigarer/sigarellos? 1=ja, 2=nei*/
+
+
+tab smk_daily skjema, mis
+
+*CONOR
+replace smk_daily=0 if SMOKE_DAILY_NOW_CO==0 /*Smoke daily now, 0=not daily smoker, 1=daily smoker*/
+replace smk_daily=0 if SMOKE_STOP_TIME_CO <.& SMOKE_DAILY_NOW_CO!=1 /*If previously smoker, years since stopping, numeric*/
+replace smk_daily=0 if SMOKE_YEARS_CO<. & SMOKE_YEARS_CO!=0 & SMOKE_DAILY_NOW_CO!=1
+replace smk_daily=0 if SMOKE_START_AGE_CO<. & SMOKE_START_AGE_CO!=0 & SMOKE_DAILY_NOW_CO!=1 /*Age at start of smoking*/
+replace smk_daily=0 if CIGARETTES_NUMBER_CO<. & CIGARETTES_NUMBER_CO!=0 & SMOKE_DAILY_NOW_CO!=1/*If present or formerly daily smoker, no of cigarettes daily*/
+replace smk_daily=1 if SMOKE_DAILY_NOW_CO==1 
+replace smk_daily=1 if CIGARETTES_CO==1 /*Smoke cigarettes daily Yes==1, No==0, yes and no==3 (kun en person har svart dette)*/
+replace smk_daily=1 if CIGAR_CO==1 		/*Smoke cigars/cigarillos daily, Yes==1, No==0 */
+replace smk_daily=1 if PIPE_CO==1 		/* Smoke pipe daily Yes==1, No==0 */
+
+
+tab smk_daily HU, col mis
+label variable smk_daily "Daily smoking"
+
+
+*-------------.
+*Former smoker ( inkludert de som kun har stoppet i mindre enn ett år?)
+*-------------.
+g smk_former=.
+*3x3
+replace smk_former=1 if u1rslutt <. & u1royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aar*/
+replace smk_former=1 if u1raar <. & u1raar !=0 & u1royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if u1rsigt==1 & u1royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_former=1 if u1sigtil <. & u1sigtil!=0 & u1royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+replace smk_former=1 if u1sigfra <. & u1sigfra!=0 & u1royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+replace smk_former=1 if u1tobakk <. & u1tobakk!=0 & u1royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke? (0 real change made)*/
+
+replace smk_former=1 if u2rslutt <. & u2royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aar*/
+replace smk_former=1 if u2raar <. & u2raar !=0 & u2royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if u2rsigt==1 & u2royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_former=1 if u2sigtil <. & u2sigtil!=0 & u2royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+replace smk_former=1 if u2sigfra <. & u2sigfra!=0 & u2royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+replace smk_former=1 if u2tobakk <. & u2tobakk!=0 & u2royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke?(0 real change made)*/
+
+replace smk_former=1 if u3rslutt <. & u3royk !=1	/*Hvor lenge er det siden De sluttet å røyke? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aarr*/
+replace smk_former=1 if u3raar <. & u3raar !=0 & u3royk !=1 /* Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if u3rsigt==1 & u3royk !=1	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_former=1 if u3sigtil <. & u3sigtil!=0 & u3royk !=1 	/*Hvor mange sigaretter røyker eller røykte De daglig - til? (0 real changes made)*/
+replace smk_former=1 if u3sigfra <. & u3sigfra!=0 & u3royk !=1	/*Hvor mange sigaretter røyker eller røykte De daglig - fra? (0 real changes made)*/
+replace smk_former=1 if u3tobakk <. & u3tobakk!=0 & u3royk !=1	/*Dersom de røyker pipe, hvor mange pakker tobakk bruker De i pipen på en uke?(0 real changes made)*/
+
+bysort indeks_kilde: tab  smk_daily smk_former, mis
+
+
+*HU40
+tab roykslutp1 skjema , mis /*3% av alle har sluttet å røyke for under 1 år siden*/
+tab roykslutp2 skjema , mis /*3% av alle har sluttet å røyke for opptil 1 år siden*/
+tab roykslutp3 skjema , mis /*n=977 (1,4%)har 0 år siden sluttet å røyke, tolker dette som at de har sluttet for noen mnd siden*/
+tab roykslutp4 skjema , mis /*n=1,509 (2%) har 0 år siden sluttet å røyke tolker dette som at de har sluttet for noen mnd siden*/
+
+replace smk_former=1 if roykslutp1<. & smk_daily!=1 /*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (1)  Mindre enn 3 måneder (2) 3 måneder-1 år (3)  1-5 år (4) mer enn 5 aar*/
+replace smk_former=1 if aarroyktp1<. & aarroyktp1 !=0 & smk_daily!=1	/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if sigtidlp1==1 & smk_daily!=1/*Har De røykt sigaretter daglig tidligere? 1=Ja, 2= Nei*/
+replace smk_former=1 if sigtilp1<. & sigtilp1!=0 & smk_daily!=1 /*Daglig antall sigaretter til (eller kun ett tall oppgitt)(0 real changes made)*/
+replace smk_former=1 if sigfrap1<. & sigfrap1!=0 & smk_daily!=1 /* Daglig antall sigaretter fra (0 real changes made)*/
+replace smk_former=1 if pktobakkp1<. & pktobakkp1!=0 & smk_daily!=1 /*Antall pakker tobakk per uke (2 des) - kun 4 fylker 1985-96 (0 real changes made)*/
+
+replace smk_former=1 if roykslutp2<. & smk_daily!=1 /*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (1)  Mindre enn 1 år, (2) mer enn 1 aarr*/
+replace smk_former=1 if aarroyktp2<. & aarroyktp2 !=0 & smk_daily!=1	/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if sigtidlp2==1 & smk_daily!=1/*Har De røykt sigaretter daglig tidligere? 1=Ja, 2= Nei (15 real changes made)*/
+replace smk_former=1 if sigtilp2<. & sigtilp2!=0 & smk_daily!=1 /*Daglig antall sigaretter til (eller kun ett tall oppgitt) (2 real changes made)*/
+replace smk_former=1 if sigfrap2<. & sigfrap2!=0 & smk_daily!=1 /* Daglig antall sigaretter fra (0 real changes made)*/
+
+replace smk_former=1 if roykslutp3<. & smk_daily!=1 /*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (aar)*/
+replace smk_former=1 if aarroyktp3<. & aarroyktp3 !=0 & smk_daily!=1	/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if roykaldp3<. & roykaldp3!=0  & smk_daily!=1/*Hvor gammel var du da du begynte å røyke? */
+replace smk_former=1 if sigtilp3<. & sigtilp3!=0 & smk_daily!=1 /*Daglig antall sigaretter til (eller kun ett tall oppgitt) (8 real changes made)*/
+replace smk_former=1 if sigfrap3<. & sigfrap3!=0 & smk_daily!=1 /* Daglig antall sigaretter fra (0 real changes made)*/
+
+replace smk_former=1 if roykslutp4<. & smk_daily!=1 /*Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (aar)*/
+replace smk_former=1 if aarroyktp4<. & aarroyktp4 !=0 & smk_daily!=1	/*Hvor mange år tilsammen har De røykt daglig?*/
+replace smk_former=1 if roykaldp4<. & roykaldp4!=0  & smk_daily!=1/*Hvor gammel var du da du begynte å røyke?*/
+replace smk_former=1 if sigtilp4<. & sigtilp4!=0 & smk_daily!=1 /*Daglig antall sigaretter til (eller kun ett tall oppgitt) (26 real changes made)*/
+replace smk_former=1 if sigfrap4<. & sigfrap4!=0 & smk_daily!=1 /* Daglig antall sigaretter fra*/
+
+
+*CONOR
+replace smk_former=1 if SMOKE_DAILY_NOW_OR_EVER_CO==2 & smk_daily!=1 /*Smoke daily now or ever:  1=Yes now, 2= Yes formerly, 3= no*/
+replace smk_former=1 if SMOKE_STOP_TIME_CO<. & smk_daily!=1  /* If formerly smoker, years since stopping, 3% har svart 0, tolker dette som noen mndr med røykestopp*/
+replace smk_former=1 if SMOKE_YEARS_CO<. & SMOKE_YEARS_CO!=0  & smk_daily!=1 /*No of years smoking*/
+replace smk_former=1 if SMOKE_START_AGE_CO<. & SMOKE_START_AGE_CO!=0 &  smk_daily!=1  /*Age at start of smoking*/
+replace smk_former=1 if CIGARETTES_NUMBER_CO<. & CIGARETTES_NUMBER_CO!=0 & smk_daily!=1 /*If present or formerly daily smoker, no of cigarettes daily*/
+
+label variable smk_former "former (daily) smoker"
+bysort HU: tab smk_daily smk_former, mis
+
+
+*-------------.
+*Never smoker
+*-------------.
+g smk_never=.
+*3X3
+replace smk_never=1 if u1rsigt==2 & u1royk==2 	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_never=1 if u1raar==. & u1royk ==2 & indeks_kilde==11
+replace smk_never=. if smk_former ==1
+
+replace smk_never=1 if u2rsigt==2 & u2royk==2 	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_never=1 if u2raar==. & u2royk ==2 & indeks_kilde==12
+replace smk_never=. if smk_former ==1
+
+replace smk_never=1 if u3rsigt==2 & u3royk==2 	/*Røyker ikke sigaretter nå, har De røykt sigaretter daglig tidligere? 1=Ja 2=Nei*/
+replace smk_never=1 if u3raar==. & u3royk ==2 & indeks_kilde==13
+replace smk_never=. if smk_former ==1
+
+bysort smk_daily: tab smk_never smk_former if HU==1, mis
+
+*HU40
+replace smk_never = 1 if sigtidlp1 ==2 & roykerp1 ==2 /* Har De røykt sigaretter daglig tidligere? 1=ja, 2=nei*/ /* Røyker De daglig for tiden? 1=ja, 2=nei*/
+replace smk_never = 1 if (aarroyktp1==. | aarroyktp1==0) & skjema==1 & smk_daily==0
+replace smk_never = 1 if smk_daily==0 & smk_former==. & skjema==1
+replace smk_never = . if smk_daily==0 & smk_former==1 & skjema==1
+replace smk_never = . if smk_daily==1 & skjema==1
+
+replace smk_never = 1 if sigtidlp2 ==2 & signaap2 ==2 & rsigarp2==2 & rpipep2==2/* Har De røykt sigaretter daglig tidligere? 1=ja, 2=nei*/ /* Røyker De sigaretter daglig? 1=ja, 2=nei*/
+replace smk_never = 1 if (aarroyktp2==. | aarroyktp2==0) & skjema==2 & smk_daily==0
+replace smk_never = 1 if smk_daily==0 & smk_former==. & skjema==2
+replace smk_never = . if smk_daily==0 & smk_former==1 & skjema==2
+replace smk_never = . if smk_daily==1 & skjema==2
+
+
+replace smk_never = 1 if roykslutp3 ==. & signaap3==2 & rsigarp3==2 & rpipep3==2 /* Har De røykt sigaretter daglig tidligere? 1=ja, 2=nei*/ /* Røyker De sigaretter daglig? 1=ja, 2=nei*/
+replace smk_never = 1 if (aarroyktp3==. | aarroyktp3==0) & smk_daily==0 & skjema==3 
+replace smk_never = 1 if (roykaldp3 ==. | roykaldp3 ==0) & smk_daily==0 & skjema==3 
+replace smk_never = 1 if smk_daily==0 & smk_former==. & skjema==3
+replace smk_never = . if smk_daily==0 & smk_former==1 & skjema==3
+replace smk_never = . if smk_daily==1 & skjema==3
+
+
+replace smk_never = 1 if ikke_rktp4==1 /*Har aldri røykt daglig?*/
+*FEIL som er rettet i linjen under. Januar 2016.
+* replace smk_never = 1 if roykslutp4 ==. & signaap4 ==2 /* Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (år)*/ /* Røyker De sigaretter daglig? 1=ja, 2=nei*/
+replace smk_never = 1 if roykslutp4 ==. & (signaap4 ==2 & rsigarp4==2 & rpipep4==2) /* Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (år)*/ /* Røyker De /sigaretter/sigarillos/pipe daglig? 1=ja, 2=nei*/
+replace smk_never = 1 if (aarroyktp4==. | aarroyktp4==0) & smk_daily==0 & skjema==4 
+replace smk_never = 1 if (roykaldp4 ==. | roykaldp4 ==0) & smk_daily==0 & skjema==4 
+replace smk_never = 1 if smk_daily==0 & smk_former==. & skjema==4
+replace smk_never = . if smk_daily==0 & smk_former==1 & skjema==4
+replace smk_never = . if smk_daily==1 & skjema==4
+
+bysort smk_daily: tab smk_never smk_former if HU==2, mis
+
+
+*CONOR
+replace smk_never=1 if SMOKE_DAILY_NOW_OR_EVER_CO==3 /*Smoke daily now or ever:  1=Yes now, 2= Yes previously, 3= no*/
+replace smk_never = 1 if smk_daily==0 & smk_former==. & HU==3
+replace smk_never = . if smk_daily==0 & smk_former==1 & HU==3
+replace smk_never = . if smk_daily==1 & HU==3
+bysort smk_daily: tab smk_never smk_former if HU==3, mis
+
+label variable smk_never "never (daily) smoker"
+
+*-------------.
+*smk_status
+*-------------.
+g smk_status=.
+replace smk_status=0 if smk_never==1
+replace smk_status=1 if smk_former==1
+replace smk_status=2 if smk_daily==1
+label variable smk_status "Smoking status"
+label define smk_statuslabel 0"never smoker" 1 "former smoker" 2 "daily smoker" 
+label values smk_status smk_statuslabel
+tab smk_status HU, mis
+
+
+*-------------.
+*Røykeår
+*-------------.
+g smk_years =.
+*3x3
+replace smk_years = u1raar if indeks_kilde==11  /*ant år i hele tall, .=mis for alle 3 us, noen få har oppgiit 0 år (kanskje de kun har røyket i noen mndr?)*/
+replace smk_years = u2raar if indeks_kilde==12 
+replace smk_years = u3raar if indeks_kilde==13 
+
+*HU40
+replace smk_years = aarroyktp1 if skjema==1 /*Hvor mange år tilsammen har du røykt daglig?*/
+replace smk_years = aarroyktp2 if skjema==2
+replace smk_years = aarroyktp3 if skjema==3
+replace smk_years = aarroyktp4 if skjema==4
+
+*Conor
+replace smk_years = SMOKE_YEARS_CO if indeks_kilde==3  /*No of years smoking*/
+tab smk_years, mis /*n= 1,195 har svart 0*/
+
+bysort HU: tab smk_years smk_daily, mis
+bysort smk_status: tab smk_years, mis
+
+
+*-------------.
+*antall sig/dag nå (eller tidligere)- mye missing
+*-------------.
+gen cig_number=.
+*3x3
+/*"."=mis, ingen "0"-verdier*/
+replace cig_number=u1sigtil if indeks_kilde==11
+replace cig_number=u1sigfra if u1sigfra>u1sigtil & u1sigfra!=. & u1sigtil!=.
+replace cig_number=u1sigfra if u1sigtil==. & u1sigfra!=. 
+
+replace cig_number=u2sigtil if indeks_kilde==12
+replace cig_number=u2sigfra if u2sigfra>u2sigtil & u2sigfra!=. & u2sigtil!=.
+replace cig_number=u2sigfra if u2sigtil==. & u2sigfra!=. 
+
+replace cig_number=u3sigtil if indeks_kilde==13
+replace cig_number=u3sigfra if u3sigfra>u3sigtil & u3sigfra!=. & u3sigtil!=.
+replace cig_number=u3sigfra if u3sigtil==. & u3sigfra!=. 
+
+*HU40
+tab sigtilp1 skjema, mis /* 99 er antagelig reelle verdier og ikke missing, ingen "0"-verdier*/
+tab sigtilp2 skjema, mis /* 99 er antagelig reelle verdier og ikke missing, ingen "0"-verdier*/
+tab sigtilp3 skjema, mis /*n= 53 "0"-verdier*/
+tab sigtilp4 skjema, mis /*n=673 "0"-verdier*/
+
+replace cig_number= sigtilp1 if skjema==1 /* Daglig antall sigaretter til (eller kun ett tall oppgitt)*/
+replace cig_number= sigfrap1 if sigfrap1>sigtilp1 & sigfrap1!=. & sigtilp1!=.
+replace cig_number= sigfrap1 if sigtilp1==. & sigfrap1!=.
+
+replace cig_number= sigtilp2 if skjema==2
+replace cig_number= sigfrap2 if sigfrap2>sigtilp2 & sigfrap2!=. & sigtilp2!=.
+replace cig_number= sigfrap2 if sigtilp2==. & sigfrap2!=.
+
+replace cig_number= sigtilp3 if skjema==3
+replace cig_number= sigfrap3 if sigfrap3>sigtilp3 & sigfrap3!=. & sigtilp3!=.
+replace cig_number= sigfrap3 if sigtilp3==. & sigfrap3!=.
+
+replace cig_number= sigtilp4 if skjema==4
+replace cig_number= sigfrap4 if sigfrap4>sigtilp4 & sigfrap4!=. & sigtilp4!=.
+replace cig_number= sigfrap4 if sigtilp4==. & sigfrap4!=.
+
+*CONOR
+tab CIGARETTES_NUMBER_CO, mis /*n=479 "0"verdier*/
+replace cig_number = CIGARETTES_NUMBER_CO if indeks_kilde==3 /*If present or previously daily smoker, no of cigarettes daily*/
+
+bysort smk_status: tab cig_number, mis
+
+
+*----------.
+*pack years
+*----------.
+
+g pack_years = .
+replace pack_years = ((cig_number/20))* smk_years
+bysort smk_status: tab pack_years, mis 
+
+*---------
+*smk grade
+*---------
+
+g smk_grade=.
+replace smk_grade=1 if smk_status==0 & (pack_years==0|.)
+replace smk_grade=2 if smk_status==1 & pack_years<20
+replace smk_grade=3 if smk_status==1 & pack_years>=20
+replace smk_grade=4 if smk_status==2 & pack_years<20
+replace smk_grade=5 if smk_status==2 & pack_years>=20
+label variable smk_grade "Smoking status and pack years"
+label define smk_gradelabel 1"never smoker" 2 "former smoker & < 20 py" 3 "former smoker & >= 20 py" 4 "daily smoker& < 20 py" 5 "daily smoker & >= 20 py"
+label values smk_grade smk_gradelabel
+tab smk_grade smk_status, mis
+sum pack_years
+hist pack_years
+tab h_utd5 smk_grade, row mis
+
+
+*missing for smk spm
+g smk_daily_any=1 if smk_daily<.
+g smk_grade_any=1 if smk_grade<.
+g smk_status_any=1 if smk_status<.
+tab smk_daily_any smk_grade_any, mis
+tab smk_daily_any smk_status_any, mis
+tab smk_grade_any smk_status_any, mis
+
+/*
+*-----------------------------
+*FEILSØK smk_status januar 2016
+*------------------------------
+
+*smk_status_any har færre missing enn smk daily--> endrer på smk_status, beholder samme antall for smk_daily
+g smk_status_feil=.
+replace smk_status_feil=1 if smk_daily==. & smk_status!=.
+tab smk_status smk_status_feil, mis /*feil missing for never_smk*/
+tab skjema smk_status_feil, mis /* feilen ligger i kodningen av p4 i HU40*/
+
+g smk_never_1 = 1 if ikke_rktp4==1 /*Har aldri røykt daglig?*/
+*FEILSLUTNING g smk_never_2 = 1 if roykslutp4 ==. & signaap4 ==2 /* Har De røykt daglig tidligere? 1=ja, 2=nei*/ /* Røyker De sigaretter daglig? 1=ja, 2=nei*/
+g smk_never_21 = 1 if roykslutp4 ==. & signaap4 ==2 & skjema==4
+g smk_never_22 = 1 if roykslutp4 ==. & (signaap4 ==2 & rsigarp4==2 & rpipep4==2)
+g smk_never_3 = 1 if (aarroyktp4==. | aarroyktp4==0) & smk_daily==0 & skjema==4 
+g smk_never_4 = 1 if (roykaldp4 ==. | roykaldp4 ==0) & smk_daily==0 & skjema==4 
+
+tab smk_status_feil smk_never_22, mis
+
+*konklusjon: 
+*smk_never ble definert som missing for "dersom røkt tidl,antall år siden sluttet" (=har ikke røykt tidl) komibinert med å ha svart nei for daglig røyking. 
+*g smk_never = 1 if roykslutp4 ==. & signaap4 ==2
+
+*feilen ligger i at det ikke er tatt hensyn til de som også har svart nei på dagling røyking av pipe og sigarillos. Dette blir rerret til:
+replace smk_never = 1 if roykslutp4 ==. & (signaap4 ==2 & rsigarp4==2 & rpipep4==2) /* Dersom De har røykt tidligere, hvor lenge er det siden De sluttet? (år)*/ /* Røyker De /sigaretter/sigarillos/pipe daglig? 1=ja, 2=nei*/
+
+*/
+
+
+/*
+Røykespm i CONOR:
+Variable         			Obs Unique      Mean   Min    Max  Label
+SMOKE_DAILY_NOW_CO  		171270      2  .3038944     0      1  Smoke daily now							Finnes ikke i alle Q i HU40
+SMOKE_DAILY_OR_EVER_CO  	92217      3  2.482742     1      3  Smoke daily now or ever smoked daily		FINNES IKKE I 3X3
+CIGARETTES_CO  				157744      3  .3214005     0      3  Smoke cigarettes daily
+CIGAR_CO      				139979      3  .0093657     0      3  Smoke cigars/cigarillos daily
+PIPE_CO       				140007      3  .0102923     0      3  Smoke pipe daily
+SMOKE_STOP_TIME_CO   		49122     79  14.44955     0     98  If previously smoker, years since stopping
+CIGARETTES_NUMBER_CO   		96420     87  11.66486     0     99  If present or previously daily smoker, no of cigarettes daily
+SMOKE_START_AGE_CO   		98611     76  18.84826     0     97  Age at start of smoking 					FINNES IKKE I 3x3
+SMOKE_YEARS_CO   			97917     82  22.36101     0     99  No of years smoking
+*/
+
+*HU40: kun roykerp1 for skjema 1, deretter spm om sid cig pipe daglig.
+*definisjon av ikke-røyker i HU40:
+*I p1 blir ikke-røykerne definert ved roykerp1=nei
+*I p2, p3, p4 er ikke-røykerne strengt tatt definert ved nei for ALLE TRE: røyker du dalglig sigaretter, pipe, cigar, men alle de som da får missing (11,000!) har svart at de ikke røyker sigaretter daglig. 
+*Jeg har definert at nei på EN ELLER FLERE av de tre er ok, som definisjon på non-dagligrøyker. Det er mulig at det ville være mer korrekt å sette kun nei for daglig smk sigaretter?
+
+
+*CONOR: hvis tidl eller nåværende smk, antall signaretter daglig- ett tall.
+*hu40: både ett tal og fra..til. 
+*jeg velger bruke til, (evt fra dersom til er missing) eller ett tall
+
+
+
+*---------------------
+*Daliy smoking tobacco
+*----------------------
+
+* HU 40 definition of non daily smokers: if answered "no" for either smoking daily cigarettes, cigar or pipe (AND excludning those with "yes")
+
+/*
+gen smk_daily_v2=.
+*3x3
+replace smk_daily_v2= 1 if u1royk==1 /*Røyker du daglig for tiden? 1=ja, 2= nei, "."= mis*/
+replace smk_daily_v2= 0 if u1royk==2
+replace smk_daily_v2= 1 if u2royk==1
+replace smk_daily_v2= 0 if u2royk==2
+replace smk_daily_v2= 1 if u3royk==1
+replace smk_daily_v2= 0 if u3royk==2
+replace smk_daily_v2= 1 if u1rsigd==1 | u1sigar ==1 | u1pipe==1 /*(0 real changes made)*/
+replace smk_daily_v2= 1 if u2rsigd==1 | u2sigar ==1 | u2pipe==1 /*(0 real changes made)*/
+replace smk_daily_v2= 1 if u3rsigd==1 | u3sigar ==1 | u3pipe==1 /*(0 real changes made)*/
+*HU40
+replace smk_daily_v2= 1 if roykerp1 == 1/*Røyker du daglig for tiden? 1=ja, 2= nei, "."= mis*/
+replace smk_daily_v2= 0 if roykerp1 == 2
+replace smk_daily_v2= 1 if signaap1 == 1 | rsigarp1==1 | rpipep1==1 
+replace smk_daily_v2= 0 if signaap2==2 | rsigarp2==2 | rpipep2==2 /*41 missing*/  /*inscerts 0-values FIRST*/
+*replace smk_daily_v2= 0 if signaap2==2 & rsigarp2==2 & rpipep2==2 /*161 missing*/
+replace smk_daily_v2= 1 if signaap2==1 | rsigarp2==1 | rpipep2==1
+replace smk_daily_v2= 0 if signaap3==2 | rsigarp3==2 | rpipep3==2 /*42 missing*/  /*inscerts 0-values FIRST*/
+*replace smk_daily_v2= 0 if signaap3==2 & rsigarp3==2 & rpipep3==2 /*77 missing*/
+replace smk_daily_v2= 1 if signaap3==1 | rsigarp3==1 | rpipep3==1
+replace smk_daily_v2= 0 if signaap4==2 | rsigarp4==2 | rpipep4==2 /*inscerts 0-values FIRST*/
+replace smk_daily_v2= 0 if ikke_rktp4== 1 /*Har aldri røykt daglig*/ /*(1290 real changes made), 298 missing*/
+replace smk_daily_v2= 1 if signaap4==1 | rsigarp4==1 | rpipep4==1
+*CONOR
+replace smk_daily_v2= 1 if SMOKE_DAILY_NOW_CO==1 /*Smoke daily now 0= Not daily smoker.  1= Daily smoker*/
+replace smk_daily_v2= 0 if SMOKE_DAILY_NOW_CO==0
+replace smk_daily_v2= 1 if CIGARETTES_CO==1 | CIGAR_CO ==1 | PIPE_CO ==1 
+label variable smk_daily_v2 "Smoking daily tobacco _v2"
+tab smk_daily_v2 skjema_HU40, mis
+tab smk_daily_v2 HU, mis
+
+bysort HU: tab smk_daily smk_daily_v2, mis
+*/
+
+
+
+
+
+
+*************
+* Høyde vekt
+*************
+*høyde er i cm i alle tre HU. 
+*vekt er målt i kg i alle tre, men har en decimal som ikke er lagt inn i 3x3 fylker.
+*missing er . for alle 3 HU. 
+	
+*unormale verdier: 
+	*list u2hoyde u2vekt if u2vekt_d==24 /*høyde 1.00, vekt 24kg --> OK*/
+	*list u3hoyde if u3vekt ==300 /*høyde 143 cm vekt 30 kg--> OK*/
+	*list hoyde_HU40 if vekt_HU40 ==27.5 /*høyde 139 cm vekt 27.5 kg--> OK*/
+	
+	*list hoyde_HU40 if vekt_HU40==5
+	*list hoyde_HU40 if vekt_HU40==5.5
+	recode vekt_HU40 5 =50
+	recode vekt_HU40 5.5 = 55
+	
+	*feilregistrert vekt i HU som ikke er med for det aktuelle utvalget her.
+	*recode u3vekt 69 = 690
+	*recode u3vekt 80 = 800
+	*recode u3vekt 110 = 1100
+	*recode HEIGHT_CO 16.3 = 163
+
+********
+*Weight*
+********
+codebook  u1vekt u2vekt u3vekt vekt_HU40 WEIGHT_CO , d 
+
+g weight=.
+*3x3
+replace weight=u1vekt/10 if indeks_kilde==11 /*Vekt i kilogram med 1 desimal*/
+replace weight=u2vekt/10 if indeks_kilde==12 /*Vekt i kilogram med 1 desimal*/
+replace weight=u3vekt/10 if indeks_kilde==13 /*Vekt i kilogram med 1 desimal*/
+*HU40
+replace weight= vekt_HU40 if indeks_kilde==2 /*Vekt (justert og kontrollert juli-09 e. R.Selmer: if (vekt gt 200) vekt=vekt/10*/
+*CONOR
+replace weight = WEIGHT_CO if indeks_kilde==3 /*Weight (kg)*/
+label variable weight "Weight (kg)"
+
+
+
+********
+*Height*
+********
+codebook u1hoyde u2hoyde u3hoyde hoyde_HU40 HEIGHT_CO, d   
+
+gen height=. 
+*3x3
+replace height=u1hoyde 	if indeks_kilde==11 /*Høyde i hele cm*/
+replace height=u2hoyde 	if indeks_kilde==12 /* Høyde i hele centimeter*/
+replace height=u3hoyde 	if indeks_kilde==13 /*Høyde i hele centimenter*/
+*HU40
+replace height=hoyde_HU40 if indeks_kilde==2 /* Høyde i hele centimeter*/
+*CONOR
+replace height=HEIGHT_CO if indeks_kilde==3 /*Height (cm)*/
+label variable height "Height(cm)"
+
+
+******
+*BMI*
+******
+
+g bmi=.
+replace bmi= weight/((height/100)^2)
+*tab bmi in 20/50
+*hist bmi
+label variable bmi "Body mass index (kg/MM2)"
+
+
+
+******
+*Syst*
+******
+*NY definisjon ifølge Andrew Wills: enten måling 2 eller gjenomsnitt av 2 og 3 for å slippe white coat effect. 
+*obs sjekk etter 0-verdier
+	*tab u1syst2, mis /*NB ikke sjekket*/
+	*tab u2syst2, mis /* u2 har 0-verdier som endres til missing i syntaxen*/
+	*tab u3syst2, mis
+	*tab u3syst3, mis
+	*tab systol_2, mis 
+	*tab systol_3, mis
+
+
+*3x3
+g u1syst_mean=.
+replace u1syst_mean=u1syst2
+*replace u1syst_mean=u1syst1 if u1syst1<. & u1syst2==. 
+replace u1syst_mean=. if u1syst2==0 
+
+
+g u2syst_mean=.
+replace u2syst_mean=u2syst2
+*replace u2syst_mean=u2syst1 if u2syst1<. & u2syst2==. 
+replace u2syst_mean=. if u2syst2==0 
+
+
+g u3syst_mean=.
+replace u3syst_mean=(u3syst2+u3syst3)/2 if u3syst2<. & u3syst3<. 
+replace u3syst_mean=u3syst2 if u3syst2<. & u3syst3==. 
+replace u3syst_mean=u3syst3 if u3syst2==. & u3syst3<. 
+
+
+*HU40
+g syst_mean_HU40=.
+replace syst_mean_HU40=(systol_2+ systol_3)/2 if systol_2<. & systol_3<.
+replace syst_mean_HU40=systol_3 if systol_3<. & systol_2==.
+replace syst_mean_HU40=systol_2 if systol_2<. & systol_3==.
+
+*CONOR
+g syst_mean_CO=.
+replace syst_mean_CO=(SYSBP2_CO+ SYSBP3_CO)/2 if SYSBP2_CO<. & SYSBP3_CO<.
+replace syst_mean_CO=SYSBP3_CO if SYSBP3_CO<. & SYSBP2_CO==.
+replace syst_mean_CO=SYSBP2_CO if SYSBP2_CO<. & SYSBP3_CO==.
+
+
+gen syst=.
+replace syst=u1syst_mean if indeks_kilde==11
+replace syst=u2syst_mean if indeks_kilde==12
+replace syst=u3syst_mean if indeks_kilde==13
+replace syst=syst_mean_HU40 if indeks_kilde==2
+replace syst=syst_mean_CO if indeks_kilde==3
+label variable syst "Systolic blood pressure (mmHg), mean of 2. and 3. measurem(2. in 3x3 w1 and w2)" 
+
+
+drop u1syst_mean u2syst_mean u3syst_mean syst_mean_HU40 syst_mean_CO
+
+
+*******
+*Diast*
+*******
+*Ny definisjon i følge Andrew
+*sjekker 0-verdier
+codebook u1dias2 u2dias2 u3dias2 u3dias3 diasto_2 diasto_3 DIABP2_CO DIABP2_CO, d 
+	*feilregistrert diast i HU40 som ikke er med for det aktuelle utvalget her: diasto_3  har en verdi på 8 og 10 , endrer disse til missing
+	*recode diasto_3 8 = .
+	*recode diasto_3 10 = .
+
+/*tab u1dias2, mis 
+tab u2dias2, mis /*u2 har 0-verdier, endres til missing i syntaxen*/
+tab u3dias2, mis
+tab u3dias3, mis
+tab diasto_2, mis
+tab diasto_3, mis 
+tab DIABP2_CO, mis
+tab DIABP2_CO, mis */
+
+
+*3x3
+g u1dias_mean=.
+replace u1dias_mean=u1dias2
+*replace u1dias_mean=u1dias1 if u1dias1<. & u1dias2==.
+replace u1dias_mean=. if u1dias2==0 
+
+g u2dias_mean=.
+replace u2dias_mean=u2dias2
+*replace u2dias_mean=u2dias1 if u2dias1<. & u2dias2==. 
+replace u2dias_mean=. if u2dias2==0 
+
+g u3dias_mean=.
+replace u3dias_mean=(u3dias2+u3dias3)/2 if u3dias2<. & u3dias3<. 
+replace u3dias_mean=u3dias2 if u3dias2<. & u3dias3==. 
+replace u3dias_mean=u3dias3 if u3dias2==. & u3dias3<. 
+
+*HU40
+g dias_mean_HU40=.
+replace dias_mean_HU40=(diasto_2+ diasto_3)/2 if diasto_2<. & diasto_3<.
+replace dias_mean_HU40=diasto_3 if diasto_3<. & diasto_2==.
+replace dias_mean_HU40=diasto_2 if diasto_2<. & diasto_3==.
+
+
+*CONOR
+g dias_mean_CO=.
+replace dias_mean_CO=(DIABP2_CO+ DIABP3_CO)/2 if DIABP2_CO<. & DIABP3_CO<.
+replace dias_mean_CO=DIABP3_CO if DIABP3_CO<. & DIABP2_CO==.
+replace dias_mean_CO=DIABP2_CO if DIABP2_CO<. & DIABP3_CO==.
+*tab dias_mean_CO, mis
+
+
+gen diast=.
+replace diast=u1dias_mean if indeks_kilde==11
+replace diast=u2dias_mean if indeks_kilde==12
+replace diast=u3dias_mean if indeks_kilde==13
+replace diast=dias_mean_HU40 if indeks_kilde==2
+replace diast=dias_mean_CO if indeks_kilde==3
+label variable diast "Diastolic blood pressure (mmHg), mean of 2. and 3. measurem(2. in 3x3 w1 and w2)" 
+tab diast indeks_kilde, mis
+hist diast
+
+drop u1dias_mean u2dias_mean u3dias_mean dias_mean_HU40 dias_mean_CO
+
+
+*************
+* Heart rate*
+*************
+*Har ikke HR for 1.og 2.runde av 3x3 fylker.
+*0-verdier
+codebook u3bpuls1 u3bpuls2 u3bpuls3 puls_1 puls_2 puls_3 HR1_CO HR2_CO HR3_CO, d /*0-verdier for enkelte*/
+mvdecode u3bpuls1, mv(0)
+mvdecode u3bpuls2, mv(0)
+mvdecode u3bpuls3, mv(0)
+mvdecode puls_1, mv(0)/*puls_1: 3 missing values generated*/
+mvdecode puls_2, mv(0)/* puls_2: 4 missing values generated*/
+mvdecode puls_3, mv(0)
+mvdecode HR1_CO, mv(0)
+mvdecode HR2_CO, mv(0)
+mvdecode HR3_CO, mv(0)/*HR3_CO: 1 missing value generated*/
+
+*helt usannsynlige målinger
+tab u3bpuls1
+tab u3bpuls2 
+tab u3bpuls3 
+tab puls_1 
+tab puls_2 
+tab puls_3 /*verdien 7*/
+tab HR1_CO 
+tab HR2_CO 
+tab HR3_CO
+
+recode puls_3 7=.
+*recode HR3_CO 9 = .
+
+*3x3
+g u3bpuls_mean=.
+replace u3bpuls_mean=(u3bpuls2+u3bpuls3)/2 if u3bpuls2<. & u3bpuls3<. 
+replace u3bpuls_mean=u3bpuls2 if u3bpuls2<. & u3bpuls3==. 
+replace u3bpuls_mean=u3bpuls3 if u3bpuls2==. & u3bpuls3<. 
+
+*HU40
+g bpuls_HU40=.
+replace bpuls_HU40=(puls_2+ puls_3)/2 if puls_2<. & puls_3<.
+replace bpuls_HU40=puls_3 if puls_3<. & puls_2==. 
+replace bpuls_HU40=puls_2 if puls_2<. & puls_3==. 
+
+*CONOR 
+g bpuls_CO=.
+replace bpuls_CO=(HR2_CO+ HR3_CO)/2 if HR2_CO<. & HR3_CO<.
+replace bpuls_CO=HR3_CO if HR3_CO<. & HR2_CO==. 
+replace bpuls_CO=HR2_CO if HR2_CO<. & HR3_CO==. 
+tab bpuls_CO, mis
+
+gen hr=.
+replace hr=u3bpuls_mean if indeks_kilde==13
+replace hr = bpuls_HU if indeks_kilde==2
+replace hr = bpuls_CO if indeks_kilde==3
+label variable hr "Heart rate (beats/min) at rest during BP, mean og 2. and 3. (excl 2w 3x3)"
+tab hr indeks_kilde, mis
+summ hr, d
+
+drop u3bpuls_mean bpuls_HU40 bpuls_CO
+
+
+************
+*Kolesterol
+***********
+*Usannsynlige målinger
+recode kolenz_HU40 97=.
+
+*3x3 Kolesterol -uten decimaler og med 0 som missing.
+g u1kolenz_d=. /*kolesterolverdi målt i mmol/l omregnet fra gammel metode til ny metode*/
+replace u1kolenz_d=u1kolenz/100
+mvdecode u1kolenz_d, mv(0) /*0 er missing, omkodes*/
+
+g u2kolenz_d=.
+replace u2kolenz_d=u2kolenz/100 /*kolesterolverdi i mmol/l omregnet fra gammel metode til ny metode*/
+mvdecode u2kolenz_d, mv(0) /*0 er missing, omkodes*/
+
+g u3kolenz_d=. /*kolesterol enzymatisk metode målt i mmol/l*/
+replace u3kolenz_d=u3kolenz/100 /*u3kolenz har ingen 0-verdier*/
+
+
+*HU40 
+codebook kolenz_HU40 trienz_HU40 hdl_HU40 hdlkol, d /*(hdlkol only Q3 and Q4, hdl only Q1 and Q2)*/
+tab kolenz_HU40, mis/*Kolesterol enzymatisk metode målt i mmol/l med 2 desimaler */
+hist kolenz_HU40
+
+*CONOR 
+tab CHOLESTEROL_CO, mis /* Total cholesterol (mmol/l) */
+
+gen kolenz=.
+replace kolenz=u1kolenz_d if indeks_kilde==11
+replace kolenz=u2kolenz_d if indeks_kilde==12
+replace kolenz=u3kolenz_d if indeks_kilde==13
+replace kolenz=kolenz_HU40 if indeks_kilde==2
+replace kolenz=CHOLESTEROL_CO if indeks_kilde==3
+label variable kolenz "Total cholesterol (mmol/l)" 
+
+drop u1kolenz_d u2kolenz_d u3kolenz_d
+
+
+**************
+*Triglycerider
+**************
+*usannsylige verider
+recode trienz_HU40 99.99=.
+recode trienz_HU40 0=.
+
+*3x3
+g u1trienz_d=. 
+replace u1trienz_d=u1trienz/100 /*Triglyserider i mmol/l omregnet fra gammel til ny metode*/
+mvdecode u1trienz_d, mv(0)/*0 er missing, omkodes*/
+hist u1trienz_d
+tab u1trienz_d
+
+g u2trienz_d=.
+replace u2trienz_d=u2trienz/100 /* Triglyserider i mmol/l omregnet fra gammel metode til ny metode*/
+mvdecode u2trienz_d, mv(0)/*0 er missing, omkodes*/
+hist u2trienz_d
+tab u2trienz_d
+
+g u3trienz_d=. /*Triglyserider enzymatisk metode målt i mmol/l*/
+replace u3trienz_d=u3trienz/100 /*u3trienz har ingen 0-verdier*/
+hist u3trienz_d 
+tab u3trienz_d 
+
+*HU40
+tab trienz_HU40, mis /*Triglyserider enzymatisk metode målt i mmol/l med 2 desimaler*/
+hist trienz_HU40 /*skewed*/
+
+*CONOR
+tab TRIGLYCERIDES_CO , mis /*Trig mmol/l*/
+
+gen trienz=.
+replace trienz=u1trienz_d if indeks_kilde==11
+replace trienz=u2trienz_d if indeks_kilde==12
+replace trienz=u3trienz_d if indeks_kilde==13
+replace trienz=trienz_HU40 if indeks_kilde==2
+replace trienz=TRIGLYCERIDES_CO if indeks_kilde==3
+label variable trienz "Triglycerides (mmol/l)"  
+summ trienz indeks_kilde, d
+
+drop u1trienz_d u2trienz_d u3trienz_d
+
+g trienz_ln =.
+replace trienz_ln = ln(trienz)
+tab trienz_ln
+
+
+
+
+*****
+*HDL 
+*****
+*ref område: Kvinner: 1,0 – 2,7 mmol/L Menn: 0,8 – 2,1 mmol/L
+*u2hdl finnes som to variable;  u2hdlkol er oppgitt i mg/dl i stedet for mmol/L.
+*u1kol-variablene har kun missing.  
+
+codebook  u2hdlkl u3hdlkl hdlkol hdl_HU40 HDL_CO, d 
+*0 verdi for hdlkol 
+recode hdlkol 0=.
+
+*3x3
+tab u2hdlkl, mis  /*ingen 0-verdier*/
+g u2hdlkl_d=.
+replace u2hdlkl_d=u2hdlkl/100  /*u2hdlkl er oppgitt i mmol/L med to decimaler*/
+hist u2hdlkl_d 
+bysort indeks_kilde: tab u2hdlkl_d, mis /*32 missing*/
+
+tab u3hdlkl, mis  /*u3hdlkl har ingen 0-verdier*/
+g u3hdlkl_d=.
+replace u3hdlkl_d=u3hdlkl/100 /*HDL-kolesterol målt i mmol/l med 2 desimaler*/
+hist u3hdlkl_d 
+bysort indeks_kilde: tab u3hdlkl_d, mis /*4,977 missing (24% missing)*/
+
+*HU40 HDL
+tab hdl_HU40 , mis /*kun få anlayser, masse*/
+tab hdlkol, mis
+g hdlkolesterol= .
+replace hdlkolesterol=hdl_HU40 if skjema ==1 |2
+replace hdlkolesterol = hdlkol if skjema== 3|4
+bysort skjema: tab hdl_HU40 , mis /*N=22,000 (87%)missing p1, n=232,338 (99%) missing p2*/
+bysort skjema: tab hdlkol , mis /*n=17,000 (25%) missing p3,n= 126 missing p4*/
+bysort skjema: tab hdlkolesterol , mis 
+
+
+*HDL
+tab HDL_CO, mis /*kun 360 missing*/
+
+gen hdl=.
+replace hdl=u2hdlkl_d  if indeks_kilde==12
+replace hdl=u3hdlkl_d  if indeks_kilde==13
+replace hdl=hdlkolesterol  if indeks_kilde==2
+replace hdl=HDL_CO  if indeks_kilde==3
+label variable hdl "HDL cholesterol (mmol/l)"
+tab hdl, mis
+
+drop u2hdlkl_d u3hdlkl_d hdlkolesterol
+
+
+****************
+*Marital status*
+****************
+codebook u1sivst u2sivst u3sivst sstand aid_MARITAL_STATUS_CO
+
+gen marital_status=.
+*3x3
+replace marital_status=u1sivst if indeks_kilde==11
+replace marital_status=u2sivst if indeks_kilde==12
+replace marital_status=u3sivst if indeks_kilde==13
+label variable marital_status "Marital status"
+label define marital_statuslabel 1 "Unmarried" 2 "Married/Registered partner" 3 "Widowed/survived partner" 4 "Divorced/Divorced partner" 5 "Separated/Separated partner" 
+label values marital_status marital_statuslabel
+
+*CONOR
+replace marital_status= 1 if aid_MARITAL_STATUS_CO==1
+replace marital_status= 2 if aid_MARITAL_STATUS_CO==2
+replace marital_status= 3 if aid_MARITAL_STATUS_CO==3
+replace marital_status= 4 if aid_MARITAL_STATUS_CO==4
+replace marital_status= 5 if aid_MARITAL_STATUS_CO==5
+
+*hu40
+replace marital_status= 1 if sstand==1
+replace marital_status= 2 if sstand==2
+replace marital_status= 3 if sstand==3
+replace marital_status= 4 if sstand==4
+replace marital_status= 5 if sstand==5
+replace marital_status= 2 if sstand==6
+replace marital_status= 5 if sstand==7
+
+
+**********************
+*Time since last meal* 
+**********************
+
+codebook u1mtid u2mtid u3tidmal smaltid_HU40 TIME_SINCE_LAST_MEAL_CO
+
+/*
+tab u3tidmal indeks_kilde, mis /*timer 0-9*/
+tab u3tidmal, nolab mis
+tab u2mtid indeks_kilde, mis /*0, 1-2, 2-4, 4-8, over 8*/
+tab u2mtid, nolab
+tab smaltid_HU40 HU, mis /*timer 0-9*/
+tab smaltid_HU40, nolab
+tab TIME_SINCE_LAST_MEAL_CO HU, mis /*hours 0-8*/
+*/
+
+g last_meal_hours_since=.
+replace last_meal_hours_since= 0 if u2mtid==1
+replace last_meal_hours_since= 1 if u2mtid==2
+replace last_meal_hours_since= 2 if u2mtid==3
+replace last_meal_hours_since= 4 if u2mtid==4
+replace last_meal_hours_since= 8 if u2mtid==5
+
+replace last_meal_hours_since= 0 if u3tidmal==0
+replace last_meal_hours_since= 1 if u3tidmal==1
+replace last_meal_hours_since= 2 if u3tidmal==2
+replace last_meal_hours_since= 3 if u3tidmal==3
+replace last_meal_hours_since= 4 if u3tidmal==4
+replace last_meal_hours_since= 5 if u3tidmal==5
+replace last_meal_hours_since= 6 if u3tidmal==6
+replace last_meal_hours_since= 7 if u3tidmal==7
+replace last_meal_hours_since= 8 if u3tidmal==8
+replace last_meal_hours_since= 8 if u3tidmal==9
+
+replace last_meal_hours_since= 0 if smaltid_HU40==0
+replace last_meal_hours_since= 1 if smaltid_HU40==1
+replace last_meal_hours_since= 2 if smaltid_HU40==2
+replace last_meal_hours_since= 3 if smaltid_HU40==3
+replace last_meal_hours_since= 4 if smaltid_HU40==4
+replace last_meal_hours_since= 5 if smaltid_HU40==5
+replace last_meal_hours_since= 6 if smaltid_HU40==6
+replace last_meal_hours_since= 7 if smaltid_HU40==7
+replace last_meal_hours_since= 8 if smaltid_HU40==8
+replace last_meal_hours_since= 8 if smaltid_HU40==9
+
+replace last_meal_hours_since= 0 if TIME_SINCE_LAST_MEAL_CO==0
+replace last_meal_hours_since= 1 if TIME_SINCE_LAST_MEAL_CO==1
+replace last_meal_hours_since= 2 if TIME_SINCE_LAST_MEAL_CO==2
+replace last_meal_hours_since= 3 if TIME_SINCE_LAST_MEAL_CO==3
+replace last_meal_hours_since= 4 if TIME_SINCE_LAST_MEAL_CO==4
+replace last_meal_hours_since= 5 if TIME_SINCE_LAST_MEAL_CO==5
+replace last_meal_hours_since= 6 if TIME_SINCE_LAST_MEAL_CO==6
+replace last_meal_hours_since= 7 if TIME_SINCE_LAST_MEAL_CO==7
+replace last_meal_hours_since= 8 if TIME_SINCE_LAST_MEAL_CO==8
+
+label variable last_meal_hours_since "Minimum time since last meal (hours)"
+
+
+
+***********************
+* Physical inactivity
+**********************
+
+*hvor mange har data for fys aktivitet?
+g akt_any=.
+replace akt_any=1 if u1mosjon <. & indeks_kilde ==11 
+replace akt_any=1 if u2mosjon <. & indeks_kilde ==12 
+replace akt_any=1 if u3mosjon <. & indeks_kilde ==13 
+replace akt_any=1 if mosjon <. & indeks_kilde ==2 
+replace akt_any=1 if l_aktiv <. & indeks_kilde ==2
+replace akt_any=1 if h_aktiv <. & indeks_kilde ==2
+replace akt_any=1 if PHYS_ACT_LEISURE_CO <. & indeks_kilde ==3
+replace akt_any=1 if PHYS_ACT_LEISURE_LIGHT_CO <. & indeks_kilde ==3
+replace akt_any=1 if PHYS_ACT_LEISURE_HARD_CO <. & indeks_kilde ==3
+
+tab akt_any HU, col mis /* missing: 3x3 0.06%, HU40 0.15%, CONOR 1.45%*/
+
+*data for mosjon?
+tab indeks_kilde mosjon, mis /*i 3x3 er det spurt om mosjon i alle tre runder*/
+tab mosjon periode , nol mis /*i HU40 er det spurt om mosjon i periode 1, 2 og 4*/
+tab HEALTH_SURVEY_CO PHYS_ACT_LEISURE_CO, nol mis /*i CONOR er det spurt om mosjon i us 4-11 (ingen fys akt data for 9= Oslo2)*/
+
+*data for h_aktiv?
+tab indeks_kilde h_aktiv, mis /*ingen spm om hard aktivitet i noen runder av 3x3*/
+tab periode h_aktiv, nol mis /*i HU40 er det spurt om hard aktivitet i periode 3 og 4*/
+tab HEALTH_SURVEY_CO PHYS_ACT_LEISURE_HARD_CO, nol col mis /*i CONOR er det spurt om hard aktivitet i us 1-11, (ingen fys akt data for 9= Oslo2)*/
+
+g SURVEY_mosjon_og_akt_CO =.
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==4  
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==5
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==6
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==7
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==8 
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==10
+replace SURVEY_mosjon_og_akt_CO =1 if HEALTH_SURVEY_CO ==11
+tab SURVEY_mosjon_og_akt_CO HEALTH_SURVEY_CO, mis /*Survey 1, 2 og 3 har kun spm om hard og lett fysisk aktivitet*/
+
+
+*Dårlig overlapp mosjon og h_aktiv
+tab mosjon h_aktiv if periode==4, mis 
+tab PHYS_ACT_LEISURE_CO PHYS_ACT_LEISURE_HARD_CO if SURVEY_mosjon_og_akt_CO==1, mis
+
+
+*---------------------------------
+*Mosjon 4-delt spørsmål
+*--------------------------------
+codebook u1mosjon u2mosjon u3mosjon mosjon PHYS_ACT_LEISURE_CO
+tab indeks_kilde, nol
+
+*HU40 
+clonevar mosjon= mosjon_HU40
+*3x3
+replace mosjon= u1mosjon if indeks_kilde ==11 
+replace mosjon= u2mosjon if indeks_kilde ==12
+replace mosjon= u3mosjon if indeks_kilde ==13
+*CONOR
+replace mosjon= PHYS_ACT_LEISURE_CO if HU==3 & PHYS_ACT_LEISURE_CO <.
+
+tab mosjon HU, col mis /*missing: 0.1% i 3x3, 18% i HU40, 71% i CONOR,*/
+
+*-------------------------
+*Lett hard fysisk aktivitet
+*--------------------------
+codebook l_aktiv h_aktiv svb_fakt PHYS_ACT_LEISURE_LIGHT_CO PHYS_ACT_LEISURE_HARD_CO 
+*galt svaralternativ rettes til missing. 
+recode l_aktiv 0=.
+
+*HU40
+clonevar l_aktiv= l_aktiv_HU40
+*CONOR
+replace l_aktiv= PHYS_ACT_LEISURE_LIGHT_CO if HU==3 & PHYS_ACT_LEISURE_LIGHT_CO <.
+
+*HU40
+clonevar h_aktiv= h_aktiv_HU40
+*CONOR
+replace h_aktiv= PHYS_ACT_LEISURE_HARD_CO if HU==3 & PHYS_ACT_LEISURE_HARD_CO <.
+
+tab h_aktiv HU, col mis /*missing : 100% i 3x3, 67% i HU40, 7% i CONOR */
+
+
+*--------------------------------------------------------
+*inakt
+*--------------------------------------------------------
+
+*inakt basert på mosjon==1 og supplert med de som har h_aktiv==1 & l_aktiv 1|2|3 for de som ikke har mosjonsspm, dvs periode 3 i HU40 og us 1,2 og 3 i Conor. 
+
+
+g inakt=. /*obs inakt=1 kommer sist slik at denne overskriver inakt==0 i første kommando*/
+replace inakt=0 if l_aktiv<. & periode==3 /*setter 0 for alle som har svart på spm i periode 3*/ 
+replace inakt=0 if h_aktiv<. & periode==3 /*setter 0 for alle som har svart på spm i periode 3*/ 
+replace inakt=1 if h_aktiv==. & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3)  & periode==3
+replace inakt=1 if h_aktiv==1 & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3 | l_aktiv==.) & periode==3  
+
+replace inakt=0 if PHYS_ACT_LEISURE_LIGHT_CO <. & HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3
+replace inakt=0 if PHYS_ACT_LEISURE_HARD_CO <. & HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3
+replace inakt=1 if PHYS_ACT_LEISURE_HARD_CO==. & (PHYS_ACT_LEISURE_LIGHT_CO==1| PHYS_ACT_LEISURE_LIGHT_CO==2| PHYS_ACT_LEISURE_LIGHT_CO==3)& HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3
+replace inakt=1 if PHYS_ACT_LEISURE_HARD_CO==1 & (PHYS_ACT_LEISURE_LIGHT_CO==1| PHYS_ACT_LEISURE_LIGHT_CO==2| PHYS_ACT_LEISURE_LIGHT_CO==3 | PHYS_ACT_LEISURE_LIGHT_CO==.)& HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3
+
+
+*for us med overlapp, kan det være at noen har missing på mosjon, men har verdi for h l aktiv.
+replace inakt=0 if mosjon==. & l_aktiv<. & periode==4 /*OBS =0-verdi først, overskrives siden*/
+replace inakt=0 if mosjon==. & h_aktiv<. & periode==4 
+replace inakt=1 if mosjon==. & h_aktiv==. & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3)  & periode==4
+replace inakt=1 if mosjon==. & h_aktiv==1 & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3 | l_aktiv==.) & periode==4  
+
+replace inakt=0 if mosjon==. & PHYS_ACT_LEISURE_LIGHT_CO <. & (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+replace inakt=0 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO <. & (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+replace inakt=1 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==. & (PHYS_ACT_LEISURE_LIGHT_CO==1| PHYS_ACT_LEISURE_LIGHT_CO==2| PHYS_ACT_LEISURE_LIGHT_CO==3)& (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+replace inakt=1 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==1 & (PHYS_ACT_LEISURE_LIGHT_CO==1| PHYS_ACT_LEISURE_LIGHT_CO==2| PHYS_ACT_LEISURE_LIGHT_CO==3 | PHYS_ACT_LEISURE_LIGHT_CO==.)& (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+
+*for us som har mosjon skal denne verdien prioriteres
+replace inakt=0 if (mosjon==2 |mosjon==3 |mosjon==4) & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+replace inakt=1 if mosjon==1 & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+
+replace inakt=0 if (mosjon==2 |mosjon==3 |mosjon==4) & (periode==1 | periode==2 | periode==4)
+replace inakt=1 if mosjon==1 & (periode==1 | periode==2 | periode==4)
+
+replace inakt=0 if (mosjon==2 |mosjon==3 |mosjon==4) & (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+replace inakt=1 if mosjon==1 & (HEALTH_SURVEY_CO == 4 |HEALTH_SURVEY_CO == 5 |HEALTH_SURVEY_CO == 6 |HEALTH_SURVEY_CO == 7 |HEALTH_SURVEY_CO == 8 |HEALTH_SURVEY_CO == 10 |HEALTH_SURVEY_CO ==11)
+
+
+tab inakt akt_any,mis /* samsvar! yohoooo!!!!*/
+bysort inakt: tab h_aktiv l_aktiv if periode==3, mis
+bysort inakt: tab h_aktiv l_aktiv if(HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3), mis
+
+
+*--------
+* fysakt
+*--------
+*fysakt basert på mosjon==1 og supplert med de som har h_aktiv==1 & l_aktiv 1|2|3 for de som ikke har mosjonsspm, dvs periode 3 i HU40 og us 1,2 og 3 i Conor. 
+
+
+g fysakt=. 
+replace fysakt=9 if h_aktiv<. & periode==3 /*kun som sjekk at alle som har svar kommer med i ny variabel*/ 
+replace fysakt=9 if l_aktiv<. & periode==3 
+replace fysakt=1 if h_aktiv==. & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3)  & periode==3
+replace fysakt=2 if h_aktiv==. & l_aktiv==4  & periode==3  
+replace fysakt=1 if h_aktiv==1 & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3 | l_aktiv==.) & periode==3  
+replace fysakt=2 if h_aktiv==1 & l_aktiv==4  & periode==3  
+replace fysakt=2 if h_aktiv==2 & periode==3  
+replace fysakt=3 if h_aktiv==3 & periode==3  
+replace fysakt=4 if h_aktiv==4 & periode==3  
+
+replace fysakt=9 if PHYS_ACT_LEISURE_HARD_CO<. & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3) /*kun som sjekk at alle som har svar kommer med i ny variabel, dvs ingen verdier med 9*/ 
+replace fysakt=9 if PHYS_ACT_LEISURE_LIGHT_CO<. & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3) 
+replace fysakt=1 if PHYS_ACT_LEISURE_HARD_CO==. & (PHYS_ACT_LEISURE_LIGHT_CO==1 | PHYS_ACT_LEISURE_LIGHT_CO==2 | PHYS_ACT_LEISURE_LIGHT_CO==3)  & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)
+replace fysakt=2 if PHYS_ACT_LEISURE_HARD_CO==. & PHYS_ACT_LEISURE_LIGHT_CO==4  & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+replace fysakt=1 if PHYS_ACT_LEISURE_HARD_CO==1 & (PHYS_ACT_LEISURE_LIGHT_CO==1 | PHYS_ACT_LEISURE_LIGHT_CO==2 | PHYS_ACT_LEISURE_LIGHT_CO==3 | PHYS_ACT_LEISURE_LIGHT_CO==.) & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+replace fysakt=2 if PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==4  & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+replace fysakt=2 if PHYS_ACT_LEISURE_HARD_CO==2 & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+replace fysakt=3 if PHYS_ACT_LEISURE_HARD_CO==3 & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+replace fysakt=4 if PHYS_ACT_LEISURE_HARD_CO==4 & (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3)  
+tab fysakt if (HEALTH_SURVEY_CO >=1 & HEALTH_SURVEY_CO <=3), mis
+
+
+*for us med overlapp med både data for mosjon og l og h aktiv, kan det være at noen har missing på mosjon, men har verdi for h l aktiv.
+
+replace fysakt=9 if mosjon==. & h_aktiv<. & periode==4 /*kun som sjekk at alle som har svar kommer med i ny variabel*/ 
+replace fysakt=9 if mosjon==. & l_aktiv<. & periode==4 
+replace fysakt=1 if mosjon==. & h_aktiv==. & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3)  & periode==4
+replace fysakt=2 if mosjon==. & h_aktiv==. & l_aktiv==4  & periode==4  
+replace fysakt=1 if mosjon==. & h_aktiv==1 & (l_aktiv==1 | l_aktiv==2 | l_aktiv==3 | l_aktiv==.) & periode==4  
+replace fysakt=2 if mosjon==. & h_aktiv==1 & l_aktiv==4  & periode==4  
+replace fysakt=2 if mosjon==. & h_aktiv==2 & periode==4  
+replace fysakt=3 if mosjon==. & h_aktiv==3 & periode==4  
+replace fysakt=4 if mosjon==. & h_aktiv==4 & periode==4  
+tab fysakt mosjon if periode==4, mis
+
+replace fysakt=9 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO<. & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9) /*kun som sjekk at alle som har svar kommer med i ny variabel*/ 
+replace fysakt=9 if mosjon==. & PHYS_ACT_LEISURE_LIGHT_CO<. & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9) 
+replace fysakt=1 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==. & (PHYS_ACT_LEISURE_LIGHT_CO==1 | PHYS_ACT_LEISURE_LIGHT_CO==2 | PHYS_ACT_LEISURE_LIGHT_CO==3)  & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)
+replace fysakt=2 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==. & PHYS_ACT_LEISURE_LIGHT_CO==4  & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+replace fysakt=1 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==1 & (PHYS_ACT_LEISURE_LIGHT_CO==1 | PHYS_ACT_LEISURE_LIGHT_CO==2 | PHYS_ACT_LEISURE_LIGHT_CO==3 | PHYS_ACT_LEISURE_LIGHT_CO==.) & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+replace fysakt=2 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==4  & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+replace fysakt=2 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==2 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+replace fysakt=3 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==3 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+replace fysakt=4 if mosjon==. & PHYS_ACT_LEISURE_HARD_CO==4 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)  
+tab fysakt mosjon if (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9), mis
+
+
+*for us som har mosjon skal denne verdien prioriteres
+replace fysakt=1 if mosjon==1 & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+replace fysakt=2 if mosjon==2 & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+replace fysakt=3 if mosjon==3 & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+replace fysakt=4 if mosjon==4 & (indeks_kilde ==11 | indeks_kilde ==12 | indeks_kilde ==13)
+
+replace fysakt=1 if mosjon==1 & (periode==1 | periode==2 | periode==4)
+replace fysakt=2 if mosjon==2 & (periode==1 | periode==2 | periode==4)
+replace fysakt=3 if mosjon==3 & (periode==1 | periode==2 | periode==4)
+replace fysakt=4 if mosjon==4 & (periode==1 | periode==2 | periode==4)
+
+
+replace fysakt=1 if mosjon==1 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)
+replace fysakt=2 if mosjon==2 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)
+replace fysakt=3 if mosjon==3 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)
+replace fysakt=4 if mosjon==4 & (HEALTH_SURVEY_CO >= 4 & HEALTH_SURVEY_CO <= 11 & HEALTH_SURVEY_CO != 9)
+
+tab fysakt indeks_kilde, mis
+
+
+*missing
+tab fysakt inakt, mis 
+*likt antall missing
+
+
+*----------------------------------------------------------------------------
+*Overlapp mosjon og lett / hard fysisk aktivitet 
+*----------------------------------------------------------------------------
+
+bysort men: spearman mosjon hr h_aktiv l_aktiv if periode==4 
+*						 mosjon
+*menn			h_aktiv	 0.56 
+*				l_aktiv	 0.43
+*				hr		-0.18
+
+*Kvinner		h_aktiv	 0.47 
+*				l_aktiv	 0.43
+*				hr		-0.11
+
+
+/*
+tab mosjon h_aktiv if periode==4, mis
+/*
+         Bevegelse og |
+kroppslig aktivitet i | Hard fysisk aktivitet i fritiden siste året (timer per
+     Deres fritid det |                         uke)?
+          siste året? |     Ingen  Under 1 t  1 - 2 tim  3 timer e          . |     Total
+----------------------+-------------------------------------------------------+----------
+Leser, ser fjernsyn/a |     7,680      3,879      1,348        149        640 |    13,696 
+Spaserer/sykler/beveg |     8,896     11,740     13,150      3,414      1,833 |    39,033 
+Driver mosjonsidrett, |       546      1,119      3,888      4,175        213 |     9,941 
+Trener hardt/driver k |        11         15        205      1,173          9 |     1,413 
+                    . |       541        422        399        133        569 |     2,064 
+----------------------+-------------------------------------------------------+----------
+                Total |    17,674     17,175     18,990      9,044      3,264 |    66,147 
+*/
+
+
+*------------------------
+*lett 2h aktiviet og ingen hard aktivitet
+*------------------------
+
+*NB her må man legge inn variablene i riktig rekkefølge. De som trener hard kan godt oppg ingen lett aktivitet uten å være inaktive.
+*legger inn 0 for alle kategorier først slik at alle som har svart blir med videre. 
+g aktiv_2h=. if periode==4
+replace aktiv_2h=0 if l_aktiv==1 & periode==4
+replace aktiv_2h=0 if l_aktiv==2 & periode==4
+replace aktiv_2h=0 if l_aktiv==3 & periode==4
+replace aktiv_2h=0 if l_aktiv==4 & periode==4
+replace aktiv_2h=0 if h_aktiv==1 & periode==4
+replace aktiv_2h=0 if h_aktiv==2 & periode==4
+replace aktiv_2h=0 if h_aktiv==3 & periode==4
+replace aktiv_2h=0 if h_aktiv==4 & periode==4
+replace aktiv_2h=1 if h_aktiv==1 & l_aktiv==1 & periode==4 /*3.7% av populasjonen som har svart på hard og lett spm er helt inaktive*/
+replace aktiv_2h=1 if h_aktiv==1 & l_aktiv==2 & periode==4 /*10.8% av populasjonen som har svart på hard lett spm er helt inaktive*/
+replace aktiv_2h=1 if h_aktiv==1 & l_aktiv==3 & periode==4/*20.7% er inaktive*/
+
+tab aktiv_2h h_aktiv if periode==4, col 		/*20.7 er inaktive*/
+tab mosjon if periode==4 						/*21.4% Leseer, ser på tv...*/
+tab aktiv_2h mosjon if periode==4, col
+/*
+           |  Bevegelse og kroppslig aktivitet i Deres
+aktiv_2h   |           fritid det siste året?
+           | Leser, se  Spaserer/  Driver mo  Trener ha |     Total
+-----------+--------------------------------------------+----------
+         0 |     6,344     33,868      9,563      1,404 |    51,179 
+           |     46.55      87.26      96.68      99.57 |     80.29 
+-----------+--------------------------------------------+----------
+         1 |     7,283      4,943        328          6 |    12,560 
+           |     53.45      12.74       3.32       0.43 |     19.71 
+-----------+--------------------------------------------+----------
+     Total |    13,627     38,811      9,891      1,410 |    63,739 
+           |    100.00     100.00     100.00     100.00 |    100.00 
+*/
+
+*g aktiv_2h=. if SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_LIGHT_CO==1 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_LIGHT_CO==2 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_LIGHT_CO==3 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_LIGHT_CO==4 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_HARD_CO==1 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_HARD_CO==2 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_HARD_CO==3 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=0 if PHYS_ACT_LEISURE_HARD_CO==4 & SURVEY_mosjon_og_akt_CO==1
+replace aktiv_2h=1 if PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==1 & SURVEY_mosjon_og_akt_CO==1 /*6% av populasjonen som har svart på hard og lett spm er helt inaktive*/
+replace aktiv_2h=1 if PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==2 & SURVEY_mosjon_og_akt_CO==1 /*13.3 av populasjonen som har svart på hard lett spm er helt inaktive*/
+replace aktiv_2h=1 if PHYS_ACT_LEISURE_HARD_CO==1 & PHYS_ACT_LEISURE_LIGHT_CO==3 & SURVEY_mosjon_og_akt_CO==1/*22.3% er inaktive*/
+
+
+tab aktiv_2h PHYS_ACT_LEISURE_HARD_CO if SURVEY_mosjon_og_akt_CO==1, col /*22.3% er inaktive*/
+tab PHYS_ACT_LEISURE_CO if SURVEY_mosjon_og_akt_CO==1  /*26.0% Leser, ser på tv...*/
+tab aktiv_2h PHYS_ACT_LEISURE_CO if SURVEY_mosjon_og_akt_CO==1, col
+/*
+           |  Exercise and physical exertion in leisure
+           |   time. If your activity varies much, fo
+  aktiv_2h | Reading,   Walking,   Light spo  Hard exer |     Total
+-----------+--------------------------------------------+----------
+         0 |     1,316      5,401      1,439        322 |     8,478 
+           |     47.56      88.51      95.81      99.08 |     79.26 
+-----------+--------------------------------------------+----------
+         1 |     1,451        701         63          3 |     2,218 
+           |     52.44      11.49       4.19       0.92 |     20.74 
+-----------+--------------------------------------------+----------
+     Total |     2,767      6,102      1,502        325 |    10,696 
+           |    100.00     100.00     100.00     100.00 |    100.00 
+*/
+
+*------------------------
+*korrelasjon med HR
+*------------------------
+
+bysort men: spearman hr mosjon h_aktiv l_aktiv if periode==4 
+*for menn: 	hr mosjon  r=	-0.18
+*			hr h_aktiv r=	-0.19
+*			hr l_aktiv r=	-0.08
+
+*for kvinner:hr mosjon r=	-0.11
+*			hr h_aktiv r=	-0.14
+*			hr l_aktiv r=	-0.06
+
+bysort men: spearman hr PHYS_ACT_LEISURE_CO  PHYS_ACT_LEISURE_HARD_CO  PHYS_ACT_LEISURE_LIGHT_CO  if SURVEY_mosjon_og_akt_CO ==1
+*for menn: 	hr mosjon  r=	-0.22
+*			hr h_aktiv r=	-0.22
+*			hr l_aktiv r=	-0.13
+
+*for kvinner:hr mosjon r=	-0.15
+*			hr h_aktiv r=	-0.15
+*			hr l_aktiv r=	-0.08
+
+	**konklusjon: ser bort fra lett aktivitetsspørsmålet.
+
+
+
+*Skal vi prioriterer mosjonsspm eller h_aktivitetsspm der hvor det er overlapp?
+bysort gen304050_123: tab alder indeks_kilde , mis
+bysort gen304050_123: tab mosjon indeks_kilde , mis /*1930 generasjonen består kun av 3x3, og har kun svart på mosjonsspm, defor prioirteres dette*/
+bysort gen304050_123: tab h_aktiv indeks_kilde, mis
+tab mosjon HU, col mis /*missing:  0.1% i 3x3, 18% i HU40, 71% i CONOR,*/
+tab h_aktiv HU, col mis /*missing: 100% i 3x3, 67% i HU40, 7% i CONOR */
+tab mosjon HU if gen304050==1, col mis /*i vår populasjon er det 31% missing for denne*/
+tab h_aktiv HU if gen304050==1, col mis /*i vår populasjon er det 55% missing for denne*/
+
+	**konklusjon: velger så mange som mulig med data for "mosjon" for de indivdene som har data for både mosjon og h_aktiv. 
+
+*/
+
+
+
+
+
+*#############################################
+*Hjelpevariable for definisjon av populasjon
+*############################################
+
+
+g cvd_risk_mis= .
+replace cvd_risk_mis=1 if syst==. | diast==. | kolenz ==. | trienz ==.| smk_grade==. | bmi==. | inakt==. /*(3758 real changes made)*/
+
+replace cvd_risk_mis=1 if syst==. 		/*(338 real changes made)*/
+replace cvd_risk_mis=1 if diast==. 		/*(0 real changes made)*/
+replace cvd_risk_mis=1 if kolenz==. 	/*(538 real changes made)*/
+replace cvd_risk_mis=1 if smk_grade==. 	/*(351 real changes made)*/
+replace cvd_risk_mis=1 if bmi==.		/*(1504 real changes made)*/
+replace cvd_risk_mis=1 if fysakt==.		/*(4713 real changes made)*/
+replace cvd_risk_mis=1 if trienz==. 	/*(15 real changes made)
+*/
+
+gen syst_mis = .
+replace syst_mis=1 if syst==.
+
+gen diast_mis = .
+replace diast_mis=1 if diast==.
+
+gen kolenz_mis = .
+replace kolenz_mis=1 if kolenz==.
+
+gen trienz_mis = .
+replace trienz_mis=1 if kolenz==.
+
+gen smk_grade_mis = .
+replace smk_grade_mis=1 if smk_grade==.
+
+gen bmi_mis = .
+replace bmi_mis=1 if bmi==.
+
+gen height_mis = .
+replace height_mis=1 if height==.
+
+gen fysakt_mis = .
+replace fysakt_mis=1 if fysakt==.
+
+/*
+gen h_utd3_inkl_0mis = .
+replace h_utd3_inkl_0mis=1 if h_utd3_inkl_0==. 
+
+gen cvd_risk_utd0_mis=.
+replace cvd_risk_utd0_mis=1 if syst==. | diast==. | kolenz ==. | trienz ==. | smk_grade==. | bmi==. | fysakt==. | h_utd3_inkl_0==. /*(6515 real changes made)*/
+tab cvd_risk_utd0_mis cvd_risk_mis, mis
+*/
+
+gen h_utd3_mis = .
+replace h_utd3_mis=1 if h_utd3==. /*(3044 real changes made)*/
+
+gen cvd_risk_utd_mis=.
+replace cvd_risk_utd_mis=1 if syst==. | diast==. | kolenz ==. | trienz ==. | smk_grade==. | bmi==. | fysakt==. | h_utd3==. /*(6515 real changes made)*/
+tab cvd_risk_utd_mis cvd_risk_mis, mis
+
+
+/*
+gen h_utd3_inkl_0_mis = .
+replace h_utd3_inkl_0_mis=1 if h_utd3_inkl_0==.
+tab h_utd3_inkl_0 h_utd3_inkl_0_mis, mis
+*/
+
+*Ingen med annluert tilgang i folkeregisteret i vår populasjon
+/*
+gen cvd_risk_utd_annul_mis=.
+replace cvd_risk_utd_mis=1 if syst==. | diast==. | kolenz ==. | trienz ==. | smk_daily==. | bmi==. | inakt==. | h_utd3==. /*(6515 real changes made)*/
+tab cvd_risk_utd_mis cvd_risk_mis, mis
+*/
+
+
+
+*** END

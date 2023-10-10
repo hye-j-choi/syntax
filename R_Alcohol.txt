@@ -102,3 +102,5 @@ raw$amount40[raw$amount40>100]=100
 raw$freqALL <- (raw[,"freqCON"])
 raw[is.na(raw[,"freqALL"]),"freqALL"] <- raw[is.na(raw[,"freqALL"]),"freq40"]
 
+
+**END

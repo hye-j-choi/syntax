@@ -1,0 +1,378 @@
+﻿
+******************************************************************************
+*************************************Index************************************
+*************PREPARATION FOR STANDARDIZATION
+**AGE AT A CENSUS TIME
+generate c_age60 = 1960-faar
+label variable c_age60 "age at the 1960 censuse"
+generate c_age70 = 1970-faar
+generate c_age80 = 1980-faar
+generate c_age90 = 1990-faar
+generate c_age01 = 2001-faar
+generate c_age11 = 2011-faar
+
+**COHORT DEFINED
+generate cohort=1 if faar>= 1940 & faar < 1950 & faar!=.
+replace cohort=2 if faar>= 1950 & faar < 1960 
+
+**************HOUSING CONDITION 1960-1980
+gen navtrede_60=real(avtrede_60) /**string to numeric for å få det til å funke**/
+gen WC60=navtrede_60
+replace WC60=. if navtrede_60==0
+replace WC60=0 if navtrede_60==1 /**WC i lelighet**/
+replace WC60=1 if navtrede_60==2 /**WC utenfor leilighet**/
+replace WC60=1 if navtrede_60==3 /**annet avtrede**/
+
+gen navtrede_70=real(avtrede_70) /**string to numeric for å få det til å funke**/
+gen WC70=navtrede_70
+replace WC70=. if navtrede_70==0
+replace WC70=0 if navtrede_70==1 /**WC i lelighet**/
+replace WC70=1 if navtrede_70==2 /**WC utenfor leilighet**/
+replace WC70=1 if navtrede_70==3 /**annet avtrede**/
+
+gen nwc_80=real(wc_80) /**string to numeric for å få det til å funke**/
+gen WC80=nwc_80
+replace WC80=. if nwc_80==0
+replace WC80=0 if nwc_80==1 /**WC i lelighet**/
+replace WC80=1 if nwc_80==2 /**WC utenfor leilighet**/
+replace WC80=1 if nwc_80==3 /**annet avtrede**/
+
+gen nbad_60=real(bad_60) /**string to numeric for å få det til å funke**/
+gen BAD60=nbad_60
+replace BAD60=. if nbad_60==0
+replace BAD60=0 if nbad_60==1 /**bad i bolig**/
+replace BAD60=1 if nbad_60==2 /**ikke bad i bolig**/
+
+gen nbad_70=real(bad_70) /**string to numeric for å få det til å funke**/
+gen BAD70=nbad_70
+replace BAD70=. if nbad_70==0
+replace BAD70=0 if nbad_70==6 /**bad i bolig**/
+replace BAD70=1 if nbad_70==7 /**bad utenfor bolig**/
+replace BAD70=1 if nbad_70==8 /**adgang bad**/
+replace BAD70=1 if nbad_70==9 /**ikke adgang bad**/
+
+gen nbad_80=real(bad_80) /**string to numeric for å få det til å funke**/
+gen BAD80=nbad_80
+replace BAD80=. if nbad_80==0
+replace BAD80=0 if nbad_80==1 /**bad**/
+replace BAD80=1 if nbad_80==2 /**ikke bad**/
+
+gen ntelefon_60=real(telefon_60) /**string to numeric for å få det til å funke**/
+gen TELEFON60=ntelefon_60
+replace TELEFON60=. if ntelefon_60==0
+replace TELEFON60=0 if ntelefon_60==1 /**telefon i bolig**/
+replace TELEFON60=1 if ntelefon_60==2 /**ikke telefon i bolig**/
+
+gen ntelefon_70=real(telefon_70) /**string to numeric for å få det til å funke**/
+gen TELEFON70=ntelefon_70
+replace TELEFON70=. if ntelefon_70==0
+replace TELEFON70=0 if ntelefon_70==1 /**telefon i bolig**/
+replace TELEFON70=1 if ntelefon_70==2 /**ikke telefon i bolig**/
+
+gen ntelefon_80=real(telefon_80) /**string to numeric for å få det til å funke**/
+gen TELEFON80=ntelefon_80
+replace TELEFON80=. if ntelefon_80==0
+replace TELEFON80=0 if ntelefon_80==1 /**telefon i bolig**/
+replace TELEFON80=1 if ntelefon_80==2 /**ikke telefon i bolig**/
+
+gen neie_leie_60=real(eie_leie_60) /**string to numeric for å få det til å funke**/
+gen EIELEIE60=neie_leie_60
+replace EIELEIE60=. if neie_leie_60==0
+replace EIELEIE60=0 if neie_leie_60==1 /**eie**/
+replace EIELEIE60=0 if neie_leie_60==2 /**andel/aksje**/
+replace EIELEIE60=1 if neie_leie_60==3 /**leie med obligasjon**/
+replace EIELEIE60=1 if neie_leie_60==4 /**leie uten innskudd**/
+replace EIELEIE60=1 if neie_leie_60==5 /**tjenestebolig**/
+
+gen neie_leie_70=real(eie_leie_70) /**string to numeric for å få det til å funke**/
+gen EIELEIE70=neie_leie_70
+replace EIELEIE70=. if neie_leie_70==0
+replace EIELEIE70=1 if neie_leie_70==3 /**leie**/
+replace EIELEIE70=0 if neie_leie_70==4 /**eie**/
+replace EIELEIE70=1 if neie_leie_70==5 /**tjenestebolig**/
+
+gen neie_leie_80=real(eierforh_80) /**string to numeric for å få det til å funke**/
+gen EIELEIE80=neie_leie_80
+replace EIELEIE80=. if neie_leie_80==0
+replace EIELEIE80=0 if neie_leie_80==1 /**borettslag/aksje**/
+replace EIELEIE80=0 if neie_leie_80==2 /**eie**/
+replace EIELEIE80=1 if neie_leie_80==3 /**leie**/
+replace EIELEIE80=1 if neie_leie_80==4 /**tjenestebolig**/
+replace EIELEIE80=1 if neie_leie_80==5 /**avgrenset tidsrom**/
+replace EIELEIE80=1 if neie_leie_80==6 /**andre vilkår**/
+
+gen nhustype_60=real(hustype_60) /**string to numeric for å få det til å funke**/
+gen HUSTYPE60=nhustype_60
+replace HUSTYPE60=. if nhustype_60==0
+replace HUSTYPE60=0 if nhustype_60==1 /**våningshus**/
+replace HUSTYPE60=0 if nhustype_60==2 /**enebolig**/
+replace HUSTYPE60=0 if nhustype_60==3 /**annet småhus**/
+replace HUSTYPE60=1 if nhustype_60==4 /**blokk**/
+replace HUSTYPE60=1 if nhustype_60==5 /**forretningsbygg**/
+replace HUSTYPE60=1 if nhustype_60==6 /**felles husholdning**/
+replace HUSTYPE60=1 if nhustype_60==9 /**ikke sammenlignbart**/
+
+gen nhustype_70=real(hustype_70) /**string to numeric for å få det til å funke**/
+gen HUSTYPE70=nhustype_70
+replace HUSTYPE70=. if nhustype_70==0
+replace HUSTYPE70=0 if nhustype_70==1 /**våningshus**/
+replace HUSTYPE70=0 if nhustype_70==2 /**enebolig**/
+replace HUSTYPE70=0 if nhustype_70==3 /**annet småhus**/
+replace HUSTYPE70=1 if nhustype_70==4 /**blokk**/
+replace HUSTYPE70=1 if nhustype_70==5 /**forretningsbygg**/
+replace HUSTYPE70=1 if nhustype_70==6 /**felles husholdning**/
+replace HUSTYPE70=1 if nhustype_70==9 /**ikke sammenlignbart**/
+
+gen nhustype_80=real(hustype_80) /**string to numeric for å få det til å funke**/
+gen HUSTYPE80=nhustype_80
+replace HUSTYPE80=. if nhustype_80==0
+replace HUSTYPE80=0 if nhustype_80==1 /**våningshus**/
+replace HUSTYPE80=0 if nhustype_80==2 /**enebolig**/
+replace HUSTYPE80=0 if nhustype_80==3 /**annet småhus**/
+replace HUSTYPE80=0 if nhustype_80==4 /**annet småhus**/
+replace HUSTYPE80=0 if nhustype_80==5 /**annet småhus**/
+replace HUSTYPE80=1 if nhustype_80==6 /**blokk**/
+replace HUSTYPE80=1 if nhustype_80==7 /**forretningsbygg**/
+replace HUSTYPE80=1 if nhustype_80==8 /**felles husholdning**/
+
+gen npersh_60=real(persh_60) /**string to numeric for å få det til å funke**/
+gen nrom_eksklkjo_60=real(rom_eksklkjo_60) /**string to numeric for å få det til å funke**/
+gen botett60=nrom_eksklkjo_60/npersh_60 if nrom_eksklkjo_60<.
+
+gen BOTETT60=botett60
+replace BOTETT60=1 if botett60<1 /**rom eksl kjøkken/antall personer i husholdning**/
+replace BOTETT60=0 if botett60>=1 & botett <.
+replace BOTETT60=. if nrom_eksklkjo_60==0
+
+gen npers_hus_70=real(pers_hus_70) /**string to numeric for å få det til å funke**/
+gen nrom_bo_u=real(rom_bo_u) /**string to numeric for å få det til å funke**/
+gen botett70=nrom_bo_u/npers_hus_70 if nrom_bo_u<. & npers_hus_70<.
+
+gen BOTETT70=botett70
+replace BOTETT70=1 if botett70<1 /**rom eksl kjøkken/antall personer i husholdning**/
+replace BOTETT70=0 if botett70>=1 & botett70<.
+replace BOTETT70=. if nrom_bo_u==0
+
+gen npershus_80=real(pershus_80) /**string to numeric for å få det til å funke**/
+gen nant_rom_80=real(ant_rom_80) /**string to numeric for å få det til å funke**/
+gen botett80=nant_rom_80/npershus_80 if nant_rom_80<. & npershus_80<.
+
+gen BOTETT80=botett80
+replace BOTETT80=1 if botett80<1 /**rom eksl kjøkken/antall personer i husholdning**/
+replace BOTETT80=0 if botett80>=1 & botett80<.
+replace BOTETT80=. if nant_rom_80==0
+
+
+*******************RANKING  HOUSING INDEX BY AGE
+gen sum60=WC60+BAD60+TELEFON60+EIELEIE60+HUSTYPE60+BOTETT60
+gen sum70=WC70+BAD70+TELEFON70+EIELEIE70+HUSTYPE70+BOTETT70
+gen sum80=WC80+BAD80+TELEFON80+EIELEIE80+HUSTYPE80+BOTETT80
+
+bysort c_age60: egen r_sum60=rank(sum60) if sum60!=.
+egen n60=count(r_sum60) if sum60!=.
+egen i60 =rank(r_sum60)
+gen hazen60 =(i60-0.5)/n60
+gen pr60 = 0 if hazen60 <= 0.66666
+replace pr60 = 1 if hazen60 > 0.66666 & hazen60!=.  // have score 1 if the sum belongs to the lowest tertile at the same age group
+
+bysort c_age70: egen r_sum70=rank(sum70) if sum70!=.
+egen n70=count(r_sum70) if sum70!=.
+egen i70 =rank(r_sum70)
+gen hazen70 =(i70-0.5)/n70
+gen pr70 = 0 if hazen70 <= 0.66666
+replace pr70 = 1 if hazen70 > 0.66666 & hazen70!=.
+
+bysort c_age80: egen r_sum80=rank(sum80) if sum80!=.
+egen n80=count(r_sum80) if sum80!=.
+egen i80 =rank(r_sum80)
+gen hazen80 =(i80-0.5)/n80
+gen pr80 = 0 if hazen80 <= 0.66666
+replace pr80 = 1 if hazen80 > 0.66666 & hazen80!=.
+
+
+
+*********************RANKING INCOME BY AGE
+graph box sam_innh, over(c_age90)
+graph box hush_samlet_inntekt if hush_samlet_inntekt>0, over(c_age01)
+graph box agg_i_18 if agg_i_18>0, over(c_age11)
+
+graph bar (median)  sam_innh, over(c_age90)
+graph bar (median)  hush_samlet_inntekt, over(c_age01)
+graph bar (median) agg_i_18, over(c_age11)
+
+*Inntekt 90 (household income in 1990) low percentage =low income
+bysort c_age90: egen md_income90=median(sam_innh)
+bysort c_age90: egen rank90=rank(sam_innh) if sam_innh!=.
+bysort c_age90: egen n90=count(rank90) if sam_innh!=.
+gen hazen90 =(rank90-0.5)/n90
+
+*Inntekt 2001 (household income in 2001)
+bysort c_age01: egen md_income01=median(hush_samlet_inntekt)
+bysort c_age01: egen rank01=rank(hush_samlet_inntekt) if hush_samlet_inntekt!=.
+bysort c_age01: egen n01=count(rank01) if hush_samlet_inntekt!=.
+gen hazen01 =(rank01-0.5)/n01
+
+*Inntekt 2011 (individual samlet income in 2011)
+bysort c_age11: egen md_income11=median(agg_i_18)
+bysort c_age11: egen rank11=rank(agg_i_18) if agg_i_18!=.
+bysort c_age11: egen n11=count(rank11) if agg_i_18!=.
+gen hazen11 =(rank11-0.5)/n11
+
+
+gen INCOME90 = 1 if hazen90 <= 0.333
+replace INCOME90= 0 if hazen90 > 0.333  & hazen90!=.
+label variable INCOME90 "1: low 33.3, 0= high 66.6"
+graph box sam_innh, over(c_age90) by(INCOME90)
+
+gen INCOME01 = 1 if hazen01 <= 0.333
+replace INCOME01 = 0 if hazen01 > 0.333 & hazen01!=.
+graph box hush_samlet_inntekt, over(c_age01) by(INCOME01)
+
+gen INCOME11 = 1 if hazen11 <= 0.333
+replace INCOME11 = 0 if hazen11 > 0.333 & hazen11!=.
+graph box agg_i_18, over(c_age11) by(INCOME11)
+
+
+***************************STANDARDIZATION
+** FIND THE NUMBERS OF CENSUS PARTICIPATION
+count if pr60==.
+generate no60= 1 // 1 if obs participated in the 1960 census
+replace no60 = 0 if pr60==. // 0 if not participated in the 1960 census
+
+count if pr70==.
+generate no70= 1 // 1 if obs participated in the 1970 census
+replace no70= 0 if pr70==. // 0 if not participated in the 1970 census
+
+count if pr80==.
+generate no80= 1 // 1 if obs participated in the 1980 census
+replace no80 = 0 if pr80==. // 0 if not participated in the 1980 census
+
+count if INCOME90==.
+generate no90= 1 // 1 if obs participated in the 1990 census
+replace no90 = 0 if INCOME90==.// 0 if not participated in the 1990 census
+
+count if INCOME01==.
+generate no01= 1 // 1 if obs participated in the 2001 census
+replace no01 = 0 if INCOME01==.// 0 if not participated in the 2001 census
+
+count if INCOME11==.
+generate no11= 1 // 1 if obs participated in the 2011 census
+replace no11= 0 if INCOME11==.// 0 if not participated in the 2011 census 
+
+
+** INDEX STANDARDIZATION 
+generate INDEX80=(pr60*no60+pr70*no70+pr80*no80)/(no60+no70+no80)
+replace INDEX80= 90 if no60+no70+no80==0
+ 
+generate INDEX90=(pr60*no60+pr70*no70+pr80*no80+INCOME90*no90)/(no60+no70+no80+no90)
+replace INDEX90= 90 if no60+no70+no80+no90==0
+t
+generate INDEX01= (pr60*no60+pr70*no70+pr80*no80+INCOME90*no90+INCOME01*no01)/(no60+no70+no80+no90+no01)
+replace INDEX01 =90 if no60+no70+no80+no90+no01==0
+
+generate INDEX11= (pr60*no60+pr70*no70+pr80*no80+INCOME90*no90+INCOME01*no01+INCOME11*no11)/(no60+no70+no80+no90+no01+no11)
+replace INDEX11=90 if no60+no70+no80+no90+no01+no11==0
+
+
+**ASSIGN STADARDIZED CUMULATIVE INDEX SCORE ACCORIDING TO THE AGE AT THE CENSUS
+generate INDEX30=INDEX80 if cohort==1 
+replace INDEX30=INDEX90 if cohort==2
+
+generate INDEX40=INDEX90 if cohort==1
+replace INDEX40=INDEX01 if cohort==2
+
+generate INDEX50=INDEX01 if cohort==1
+replace INDEX50=INDEX11 if cohort==2
+
+
+********************************************************************************
+******************************Merge with Eudcation******************************
+import delimited "N:\durable\Forskningsfiler\_FELLES\Data\utdanning\w11_1676_bu_1970_2012.csv"
+
+keep  lopenr_ny bu_regdato  bu_1970  bu_1980  bu_1990 bu_2001  bu_2011
+
+merge m:m lopenr_ny using "M:\p691-hyejc\Use\2nd\utdanning.dta", keepusing(bu_regdato bu_1970  bu_1980  bu_1990 bu_2001  bu_2011)
+drop if _merge==2   
+rename _merge _mergeUtdanning
+
+generate h_utd_80= int(bu_1980/100000) 
+replace h_utd_80=0 if bu_1980==.   
+label variable bu_1980 "99901 is Ingen utdanning, not uoppgitt"
+tab  bu_1980 if h_utd_80==0 
+
+gen UTD_80=h_utd_80
+replace UTD_80=1 if h_utd_80==0  //Ingen utdanning og førskoleutdanning
+replace UTD_80=1 if h_utd_80==1  //Barneskoleutdanning
+replace UTD_80=1 if h_utd_80==2  //Ungdomsskoleutdanning
+replace UTD_80=0 if h_utd_80==3  //Videregående, grunnutdanning
+replace UTD_80=0 if h_utd_80==4  //Videregående, avsluttende utdanning
+replace UTD_80=0 if h_utd_80==5  //Påbygging til videregående utdanning
+replace UTD_80=0 if h_utd_80==6  //Universitets- og høgskoleutdanning, lavere nivå
+replace UTD_80=0 if h_utd_80==7  //Universitets- og høgskoleutdanning, høyere nivå
+replace UTD_80=0 if h_utd_80==8  //Forskerutdanning
+tab h_utd_80 UTD_80  
+
+generate h_utd_90= int(bu_1990/100000) 
+replace h_utd_90=0 if bu_1990==.   
+label variable bu_1990 "99901 is Ingen utdanning, not uoppgitt"
+tab  bu_1990 if h_utd_90==0 
+
+gen UTD_90=h_utd_90
+replace UTD_90=1 if h_utd_90==0  //Ingen utdanning og førskoleutdanning
+replace UTD_90=1 if h_utd_90==1  //Barneskoleutdanning
+replace UTD_90=1 if h_utd_90==2  //Ungdomsskoleutdanning
+replace UTD_90=0 if h_utd_90==3  //Videregående, grunnutdanning
+replace UTD_90=0 if h_utd_90==4  //Videregående, avsluttende utdanning
+replace UTD_90=0 if h_utd_90==5  //Påbygging til videregående utdanning
+replace UTD_90=0 if h_utd_90==6  //Universitets- og høgskoleutdanning, lavere nivå
+replace UTD_90=0 if h_utd_90==7  //Universitets- og høgskoleutdanning, høyere nivå
+replace UTD_90=0 if h_utd_90==8  //Forskerutdanning
+tab h_utd_90 UTD_90  
+
+generate h_utd_00= int(bu_2001/100000) //136,163  missing values generated
+replace h_utd_00=0 if bu_2001==.   //136,163  real changes made, som er Uoppgitt
+label variable bu_2001 "99901 is Ingen utdanning, not uoppgitt"
+tab  bu_2001 if h_utd_00==0 
+
+gen UTD_00=h_utd_00
+replace UTD_00=1 if h_utd_00==0  //Ingen utdanning og førskoleutdanning
+replace UTD_00=1 if h_utd_00==1  //Barneskoleutdanning
+replace UTD_00=1 if h_utd_00==2  //Ungdomsskoleutdanning
+replace UTD_00=0 if h_utd_00==3  //Videregående, grunnutdanning
+replace UTD_00=0 if h_utd_00==4  //Videregående, avsluttende utdanning
+replace UTD_00=0 if h_utd_00==5  //Påbygging til videregående utdanning
+replace UTD_00=0 if h_utd_00==6  //Universitets- og høgskoleutdanning, lavere nivå
+replace UTD_00=0 if h_utd_00==7  //Universitets- og høgskoleutdanning, høyere nivå
+replace UTD_00=0 if h_utd_00==8  //Forskerutdanning
+tab h_utd_00 UTD_00 
+
+generate h_utd_11= int(bu_2011/100000) 
+replace h_utd_11=0 if bu_2011==.   
+label variable bu_2011 "99901 is Ingen utdanning, not uoppgitt"
+tab  bu_2011 if h_utd_11==0 
+
+gen UTD_11=h_utd_11
+replace UTD_11=1 if h_utd_11==0  //Ingen utdanning og førskoleutdanning
+replace UTD_11=1 if h_utd_11==1  //Barneskoleutdanning
+replace UTD_11=1 if h_utd_11==2  //Ungdomsskoleutdanning
+replace UTD_11=0 if h_utd_11==3  //Videregående, grunnutdanning
+replace UTD_11=0 if h_utd_11==4  //Videregående, avsluttende utdanning
+replace UTD_11=0 if h_utd_11==5  //Påbygging til videregående utdanning
+replace UTD_11=0 if h_utd_11==6  //Universitets- og høgskoleutdanning, lavere nivå
+replace UTD_11=0 if h_utd_11==7  //Universitets- og høgskoleutdanning, høyere nivå
+replace UTD_11=0 if h_utd_11==8  //Forskerutdanning
+tab h_utd_11 UTD_11  
+tab UTD_11 UTD_00
+tab UTD_11 UTD_90
+
+generate EDU30=UTD_80 if cohort==1
+replace EDU30=UTD_90 if cohort==2
+
+generate EDU30=UTD_90 if cohort==1
+replace EDU30=UTD_00 if cohort==2
+
+generate EDU30=UTD_00 if cohort==1
+replace EDU30=UTD_01 if cohort==2
+
+
+**END
